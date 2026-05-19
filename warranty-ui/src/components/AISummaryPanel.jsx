@@ -5,10 +5,11 @@ export default function AISummaryPanel({ claim, agentResults }) {
 
   if (!agentResults?.summary) {
     return (
-      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl mb-4 animate-pulse">
-        <div className="h-4 bg-blue-100 rounded w-3/4 mb-2"></div>
-        <div className="h-4 bg-blue-100 rounded w-1/2 mb-2"></div>
-        <div className="h-4 bg-blue-100 rounded w-2/3"></div>
+      <div className="bg-white border border-toyota-200 border-l-4 border-l-toyota-red rounded-lg p-5 mb-4 animate-pulse">
+        <div className="h-3 bg-toyota-100 rounded w-1/4 mb-3"></div>
+        <div className="h-3 bg-toyota-100 rounded w-3/4 mb-2"></div>
+        <div className="h-3 bg-toyota-100 rounded w-1/2 mb-2"></div>
+        <div className="h-3 bg-toyota-100 rounded w-2/3"></div>
       </div>
     )
   }
@@ -16,37 +17,40 @@ export default function AISummaryPanel({ claim, agentResults }) {
   const { summary, recommendation, confidence } = agentResults.summary
 
   const recBadge = {
-    approve: 'bg-green-100 text-green-800 border-green-200',
-    review: 'bg-amber-100 text-amber-800 border-amber-200',
-    reject: 'bg-red-100 text-red-800 border-red-200',
+    approve: 'bg-status-clean-tint text-status-clean border-status-clean-border',
+    review: 'bg-status-anomaly-tint text-status-anomaly border-status-anomaly-border',
+    reject: 'bg-status-flagged-tint text-status-flagged border-status-flagged-border',
   }
 
-  const confBadge = {
-    low: 'text-gray-500',
-    medium: 'text-amber-600',
-    high: 'text-green-600',
+  const confLabel = {
+    low: 'text-toyota-500',
+    medium: 'text-status-anomaly',
+    high: 'text-status-clean',
   }
 
   return (
-    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl mb-4">
-      <div className="flex items-center gap-3 mb-2">
-        <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full border capitalize ${recBadge[recommendation]}`}>
+    <div className="bg-white border border-toyota-200 border-l-4 border-l-toyota-red rounded-lg p-5 mb-4">
+      <div className="flex items-center gap-3 mb-3">
+        <span className="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold">
+          AI Reviewer Summary
+        </span>
+        <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border ${recBadge[recommendation]}`}>
           {recommendation}
         </span>
-        <span className={`text-xs font-medium capitalize ${confBadge[confidence]}`}>
+        <span className={`text-xs font-medium capitalize ${confLabel[confidence]}`}>
           {confidence} confidence
         </span>
       </div>
-      <p className="text-sm text-gray-700 leading-relaxed">{summary}</p>
+      <p className="text-[15px] text-toyota-ink leading-relaxed">{summary}</p>
 
       <button
         onClick={() => setShowNotes(!showNotes)}
-        className="mt-3 text-xs text-blue-600 hover:text-blue-800 font-medium"
+        className="mt-4 text-xs text-toyota-600 hover:text-toyota-red font-medium uppercase tracking-wider transition-colors"
       >
         {showNotes ? '▾ Hide source notes' : '▸ Show source notes'}
       </button>
       {showNotes && (
-        <div className="mt-2 bg-white/60 rounded p-3 text-xs text-gray-600 italic">
+        <div className="mt-2 bg-toyota-50 border border-toyota-200 rounded-md p-3 text-xs text-toyota-600 italic leading-relaxed">
           {claim.techNotes}
         </div>
       )}

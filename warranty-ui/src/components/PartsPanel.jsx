@@ -4,27 +4,41 @@ export default function PartsPanel({ parts }) {
   const formatCurrency = (amount) =>
     `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
+  const total = parts.reduce((sum, p) => sum + p.qty * p.unitCost, 0)
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">Parts Detail</h3>
+    <div className="bg-white border border-toyota-200 rounded-lg p-5 mb-4">
+      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-toyota-500 mb-3">
+        Parts Detail
+      </h3>
       <table className="w-full text-sm">
         <thead>
-          <tr className="bg-gray-100 text-gray-600 text-xs font-semibold uppercase tracking-wide">
+          <tr className="bg-toyota-50 text-toyota-500 text-[11px] font-semibold uppercase tracking-wider border-y border-toyota-200">
             <th className="px-3 py-2 text-left">Part Code</th>
             <th className="px-3 py-2 text-right">Qty</th>
             <th className="px-3 py-2 text-right">Unit Cost</th>
             <th className="px-3 py-2 text-right">Line Total</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-toyota-100">
           {parts.map((part, i) => (
-            <tr key={i} className="border-t border-gray-100">
-              <td className="px-3 py-2 font-mono text-xs">{part.code}</td>
-              <td className="px-3 py-2 text-right">{part.qty}</td>
-              <td className="px-3 py-2 text-right">{formatCurrency(part.unitCost)}</td>
-              <td className="px-3 py-2 text-right font-medium">{formatCurrency(part.qty * part.unitCost)}</td>
+            <tr key={i}>
+              <td className="px-3 py-2.5 font-mono text-xs text-toyota-700">{part.code}</td>
+              <td className="px-3 py-2.5 text-right tabular-nums text-toyota-700">{part.qty}</td>
+              <td className="px-3 py-2.5 text-right tabular-nums text-toyota-700">{formatCurrency(part.unitCost)}</td>
+              <td className="px-3 py-2.5 text-right tabular-nums font-semibold text-toyota-ink">
+                {formatCurrency(part.qty * part.unitCost)}
+              </td>
             </tr>
           ))}
+          <tr className="bg-toyota-50">
+            <td className="px-3 py-2 text-[11px] uppercase tracking-wider text-toyota-500 font-semibold" colSpan={3}>
+              Parts Total
+            </td>
+            <td className="px-3 py-2 text-right tabular-nums font-bold text-toyota-ink">
+              {formatCurrency(total)}
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
