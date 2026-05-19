@@ -139,3 +139,62 @@ export function useAgents(claims, rules) {
 
   return { agentResults, isLoading, runAgents }
 }
+
+export async function generateCustomerExplanation(claim, validation) {
+  await new Promise(r => setTimeout(r, 300))
+  const failures = validation?.results?.filter(r => !r.passed) || []
+  if (failures.length === 0) {
+    return {
+      explanation: `Your warranty claim (${claim.claimId}) has been approved. All policy requirements were met and your claim will be processed for payment.`,
+      ruleReference: 'No violations found',
+      contestEligible: false
+    }
+  }
+  const mainRule = failures[0]
+  return {
+    explanation: `Your warranty claim (${claim.claimId}) for ${claim.warrantyType} coverage was reviewed. ${mainRule.message} Based on this policy requirement, your claim has been flagged for further review or denial.`,
+    ruleReference: `${mainRule.ruleId}: ${mainRule.message}`,
+    contestEligible: true
+  }
+}
+
+export async function generateResolutionBrief(claim, validation, contest) {
+  await new Promise(r => setTimeout(r, 500))
+  const failures = validation?.results?.filter(r => !r.passed) || []
+
+  let classification = 'other'
+  if (claim.repairCodes?.includes('U0100')) classification = 'documentation_gap'
+  else if (failures.some(f => f.ruleId === 'R-01')) classification = 'labor_dispute'
+  else if (failures.some(f => f.ruleId === 'R-06')) classification = 'coverage_question'
+
+  let evidenceAssessment = 'no_material_change'
+  if (classification === 'documentation_gap' && contest?.evidence?.length > 0) {
+    evidenceAssessment = 'changes_outcome'
+  } else if (contest?.evidence?.length > 0) {
+    evidenceAssessment = 'needs_investigation'
+  }
+
+  let recommendation = 'uphold'
+  let rationale = 'Original policy concern remains valid. Customer contest does not address the core violation.'
+  if (evidenceAssessment === 'changes_outcome') {
+    recommendation = 'overturn'
+    rationale = 'Customer has provided independent evidence that substantiates the repair necessity. Original denial was based on unverified diagnosis — new evidence fills this gap.'
+  } else if (evidenceAssessment === 'needs_investigation') {
+    recommendation = 'partial'
+    rationale = 'Some merit to customer position but original policy concern remains partially valid.'
+  }
+
+  return {
+    classification,
+    evidenceAssessment,
+    precedents: [
+      { caseId: 'CLM-18942', outcome: 'Overturned', reason: 'Independent diagnostic confirmed intermittent fault.' },
+      { caseId: 'CLM-21087', outcome: 'Upheld', reason: 'No supporting evidence provided.' },
+    ],
+    gaps: classification === 'documentation_gap'
+      ? ['Verify independent diagnostic report authenticity', 'Cross-reference TSB applicability to this VIN']
+      : ['Confirm dealer repair history', 'Review technician certification status'],
+    recommendation,
+    rationale
+  }
+}

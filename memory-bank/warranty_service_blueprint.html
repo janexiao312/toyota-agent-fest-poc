@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warranty Claims Engine — Service Blueprint</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
+    background: #f8f7f4;
+    color: #1a1a18;
+    padding: 32px 24px 64px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: #5f5e5a;
+    margin-bottom: 28px;
+  }
+
+  /* Journey tabs */
+  .journey-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 0.5px solid #d3d1c7;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #5f5e5a;
+    transition: all 0.15s;
+  }
+
+  .tab-btn:hover { background: #f1efe8; }
+
+  .tab-btn.active {
+    background: #1a1a18;
+    color: #fff;
+    border-color: #1a1a18;
+  }
+
+  /* Blueprint container */
+  .blueprint {
+    display: none;
+  }
+  .blueprint.visible { display: block; }
+
+  .journey-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .journey-title {
+    font-size: 17px;
+    font-weight: 500;
+  }
+
+  .journey-tag {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 10px;
+    border-radius: 12px;
+  }
+
+  .journey-desc {
+    font-size: 12px;
+    color: #5f5e5a;
+    margin-bottom: 20px;
+  }
+
+  /* Blueprint grid */
+  .bp-grid {
+    width: 100%;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  /* Header row — stages */
+  .bp-stages {
+    display: flex;
+    background: #1a1a18;
+    color: #fff;
+  }
+
+  .bp-stage-label {
+    width: 130px;
+    min-width: 130px;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #b4b2a9;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-right: 0.5px solid #444441;
+    display: flex;
+    align-items: center;
+  }
+
+  .bp-stage-cells {
+    display: flex;
+    flex: 1;
+    overflow-x: auto;
+  }
+
+  .bp-stage-cell {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fff;
+    border-right: 0.5px solid #444441;
+    text-align: center;
+  }
+  .bp-stage-cell:last-child { border-right: none; }
+
+  /* Swimlane rows */
+  .bp-row {
+    display: flex;
+    border-top: 0.5px solid #e8e6e0;
+  }
+
+  .bp-row-label {
+    width: 130px;
+    min-width: 130px;
+    padding: 12px 14px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #5f5e5a;
+    border-right: 0.5px solid #e8e6e0;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .row-icon {
+    font-size: 14px;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+
+  .bp-cells {
+    display: flex;
+    flex: 1;
+    overflow-x: auto;
+  }
+
+  .bp-cell {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 12px;
+    border-right: 0.5px solid #e8e6e0;
+    vertical-align: top;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .bp-cell:last-child { border-right: none; }
+
+  /* Row color themes */
+  .row-customer .bp-row-label { background: #E6F1FB; color: #0C447C; }
+  .row-customer .bp-cell { background: #f5f9fe; }
+
+  .row-frontstage .bp-row-label { background: #FAECE7; color: #712B13; }
+  .row-frontstage .bp-cell { background: #fdf7f5; }
+
+  .row-line { border-top: 1.5px dashed #d3d1c7; }
+  .row-line .bp-row-label { background: #f8f7f4; color: #888780; font-style: italic; font-size: 10px; align-items: center; }
+  .row-line .bp-cell { background: #f8f7f4; }
+
+  .row-backstage .bp-row-label { background: #EEEDFE; color: #3C3489; }
+  .row-backstage .bp-cell { background: #faf9fe; }
+
+  .row-agent .bp-row-label { background: #E1F5EE; color: #085041; }
+  .row-agent .bp-cell { background: #f4fdf9; }
+
+  .row-support .bp-row-label { background: #F1EFE8; color: #444441; }
+  .row-support .bp-cell { background: #faf9f7; }
+
+  /* Cell content styles */
+  .cell-action {
+    font-weight: 500;
+    color: #1a1a18;
+    margin-bottom: 4px;
+    font-size: 12px;
+  }
+
+  .cell-detail {
+    color: #5f5e5a;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .cell-empty {
+    color: #d3d1c7;
+    font-size: 11px;
+    font-style: italic;
+  }
+
+  /* Emotion indicators */
+  .emotion {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 4px;
+  }
+  .em-positive { background: #EAF3DE; color: #3B6D11; }
+  .em-neutral  { background: #F1EFE8; color: #5F5E5A; }
+  .em-negative { background: #FCEBEB; color: #A32D2D; }
+  .em-alert    { background: #FAEEDA; color: #854F0B; }
+
+  /* Component badge */
+  .comp-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #EEEDFE;
+    color: #3C3489;
+    margin-top: 4px;
+    font-family: monospace;
+  }
+
+  /* Agent badge */
+  .agent-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #E1F5EE;
+    color: #085041;
+    margin-top: 4px;
+    font-family: monospace;
+  }
+
+  /* Evidence of service */
+  .evidence {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #F1EFE8;
+    color: #5F5E5A;
+    margin-top: 4px;
+  }
+
+  /* Fail point */
+  .fail-point {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #FCEBEB;
+    color: #A32D2D;
+    margin-top: 4px;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: #fff;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 10px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #5f5e5a;
+  }
+
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .divider-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    border-top: 1.5px dashed #d3d1c7;
+    background: #f8f7f4;
+    font-size: 10px;
+    color: #888780;
+    font-style: italic;
+    height: 28px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .divider-line span {
+    white-space: nowrap;
+  }
+
+  @media print {
+    body { background: #fff; padding: 16px; }
+    .journey-tabs { display: none; }
+    .blueprint { display: block !important; page-break-after: always; }
+  }
+</style>
+
+<h1>Warranty Claims Engine — Service Blueprint</h1>
+<p class="subtitle">All four user journeys · Swimlane view across customer, front stage, back stage, AI agents, and support systems</p>
+
+<div class="journey-tabs">
+  <button class="tab-btn active" onclick="showJourney('j1')">J1 · Complex claim review</button>
+  <button class="tab-btn" onclick="showJourney('j2')">J2 · Leakage detection</button>
+  <button class="tab-btn" onclick="showJourney('j3')">J3 · Escalation</button>
+  <button class="tab-btn" onclick="showJourney('j4')">J4 · Customer contest</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- JOURNEY 1 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="j1" class="blueprint visible">
+  <div class="journey-header">
+    <span class="journey-title">J1 · Complex claim review</span>
+    <span class="journey-tag" style="background:#FAECE7;color:#712B13;">Warranty reviewer</span>
+  </div>
+  <p class="journey-desc">Proves reviewer productivity. A reviewer works through a flagged claim using AI-generated summary and policy validation to reach a decision faster than manual review.</p>
+
+  <div class="bp-grid">
+    <div class="bp-stages">
+      <div class="bp-stage-label">Swimlane</div>
+      <div class="bp-stage-cells">
+        <div class="bp-stage-cell">1 · App loads</div>
+        <div class="bp-stage-cell">2 · Queue scan</div>
+        <div class="bp-stage-cell">3 · Open claim</div>
+        <div class="bp-stage-cell">4 · Read summary</div>
+        <div class="bp-stage-cell">5 · Review flags</div>
+        <div class="bp-stage-cell">6 · Decide</div>
+        <div class="bp-stage-cell">7 · Return to queue</div>
+      </div>
+    </div>
+
+    <!-- Customer / User -->
+    <div class="bp-row row-customer">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Reviewer<br>actions</div>
+      <div class="bp-cells">
+        <div class="bp-cell"><span class="cell-empty">Waiting</span></div>
+        <div class="bp-cell">
+          <div class="cell-action">Scans queue</div>
+          <div class="cell-detail">Filters to Flagged. Sorts by amount.</div>
+          <span class="emotion em-neutral">Oriented</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Clicks flagged row</div>
+          <div class="cell-detail">Opens claim detail view.</div>
+          <span class="emotion em-neutral">Engaged</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Reads AI narrative</div>
+          <div class="cell-detail">3-sentence summary with recommendation badge.</div>
+          <span class="emotion em-positive">Informed</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Reviews rules</div>
+          <div class="cell-detail">Checks PASS/FAIL per rule. Reads severity.</div>
+          <span class="emotion em-positive">Confident</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Clicks Reject</div>
+          <div class="cell-detail">One click. No extra confirmation needed.</div>
+          <span class="emotion em-positive">Productive</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Next claim auto-selected</div>
+          <div class="cell-detail">Loop continues without friction.</div>
+          <span class="emotion em-positive">In flow</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Front stage -->
+    <div class="bp-row row-frontstage">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Front stage<br>(visible UI)</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Queue renders</div>
+          <div class="cell-detail">Analysing… spinner on hero claims.</div>
+          <span class="comp-badge">ClaimQueue.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Status badges</div>
+          <div class="cell-detail">Red Flagged · Amber Anomaly · Blue Clean</div>
+          <span class="comp-badge">ClaimRow.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Detail view opens</div>
+          <div class="cell-detail">Metadata renders instantly. Skeleton on summary panel.</div>
+          <span class="comp-badge">ClaimDetail.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">AI summary card</div>
+          <div class="cell-detail">Narrative + Reject badge + High confidence.</div>
+          <span class="comp-badge">AISummaryPanel.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Policy flags panel</div>
+          <div class="cell-detail">R-01 FAIL · High · rule message.</div>
+          <span class="comp-badge">PolicyFlagsPanel.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Action bar</div>
+          <div class="cell-detail">Approve · Escalate · Reject buttons.</div>
+          <span class="comp-badge">ActionBar.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Savings counter ticks</div>
+          <div class="cell-detail">Leakage prevented increments live.</div>
+          <span class="comp-badge">SavingsCounter.jsx</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Line of visibility -->
+    <div class="divider-line"><span>Line of visibility — reviewer cannot see below this line</span></div>
+
+    <!-- Back stage -->
+    <div class="bp-row row-backstage">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Back stage<br>(hidden logic)</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Pre-run agents</div>
+          <div class="cell-detail">5 hero claims processed on load. Results cached.</div>
+          <span class="comp-badge">useAgents.js</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Sort + filter logic</div>
+          <div class="cell-detail">Flagged/Anomaly first. Then by claimAmount desc.</div>
+          <span class="comp-badge">claimsStore.js</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">State update</div>
+          <div class="cell-detail">activeClaimId set. agentResults loaded if cached.</div>
+          <span class="comp-badge">App.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">summarizeClaim()</div>
+          <div class="cell-detail">Claim + validation → narrative + recommendation.</div>
+          <span class="fail-point">Fail: shows amber warning</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">validateClaim()</div>
+          <div class="cell-detail">Claims + rules → per-rule PASS/FAIL + severity.</div>
+          <span class="comp-badge">useAgents.js</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">decisions[] updated</div>
+          <div class="cell-detail">claimId → 'reject'. leakage += claimAmount.</div>
+          <span class="comp-badge">App.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Next claim selected</div>
+          <div class="cell-detail">Auto-advance to next Flagged/Anomaly claim.</div>
+          <span class="comp-badge">App.jsx</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI agents -->
+    <div class="bp-row row-agent">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>AI agents</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Intake agent</div>
+          <div class="cell-detail">Normalises claim data + tech notes.</div>
+          <span class="agent-badge">Intake</span>
+        </div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell">
+          <div class="cell-action">Summarization agent</div>
+          <div class="cell-detail">Generates reviewer narrative with cited sources.</div>
+          <span class="agent-badge">Summarization</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Policy validation agent</div>
+          <div class="cell-detail">Checks rules.json against claim fields.</div>
+          <span class="agent-badge">Policy validation</span>
+        </div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+      </div>
+    </div>
+
+    <!-- Support systems -->
+    <div class="bp-row row-support">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Support<br>systems</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-detail">claims.json<br>rules.json</div>
+          <span class="evidence">Data source</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-detail">claimsStore selectors</div>
+          <span class="evidence">Filter logic</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-detail">React state / App.jsx</div>
+          <span class="evidence">State mgmt</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-detail">Anthropic SDK</div>
+          <span class="evidence">LLM API</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-detail">rules.json policy store</div>
+          <span class="evidence">Policy data</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-detail">React state decisions[]</div>
+          <span class="evidence">Decision store</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-detail">claimsStore selector</div>
+          <span class="evidence">Next claim logic</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#E6F1FB;border:0.5px solid #B5D4F4"></div>Reviewer action</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#FAECE7;border:0.5px solid #F5C4B3"></div>Front stage (visible UI)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#EEEDFE;border:0.5px solid #CECBF6"></div>Back stage (hidden logic)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#E1F5EE;border:0.5px solid #9FE1CB"></div>AI agents</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#F1EFE8;border:0.5px solid #D3D1C7"></div>Support systems</div>
+    <div class="legend-item"><span class="fail-point">Red pill</span>&nbsp;= potential failure point</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- JOURNEY 2 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="j2" class="blueprint">
+  <div class="journey-header">
+    <span class="journey-title">J2 · Leakage detection in auto-approved claims</span>
+    <span class="journey-tag" style="background:#E1F5EE;color:#085041;">Claims ops manager</span>
+  </div>
+  <p class="journey-desc">Proves leakage detection and anomaly flagging. Manager sees pattern-level signals the rules engine was missing, surfaced by the anomaly detection agent across high-volume auto-approved batches.</p>
+
+  <div class="bp-grid">
+    <div class="bp-stages">
+      <div class="bp-stage-label">Swimlane</div>
+      <div class="bp-stage-cells">
+        <div class="bp-stage-cell">1 · Queue overview</div>
+        <div class="bp-stage-cell">2 · Filter anomalies</div>
+        <div class="bp-stage-cell">3 · Open anomaly</div>
+        <div class="bp-stage-cell">4 · Understand pattern</div>
+        <div class="bp-stage-cell">5 · Check metrics</div>
+      </div>
+    </div>
+
+    <div class="bp-row row-customer">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Manager<br>actions</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Opens queue</div>
+          <div class="cell-detail">Sees aggregate view before drilling in.</div>
+          <span class="emotion em-neutral">Oriented</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Clicks Anomaly tab</div>
+          <div class="cell-detail">Filters to anomaly-flagged claims only.</div>
+          <span class="emotion em-neutral">Analytical</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Opens CLM-00004</div>
+          <div class="cell-detail">Dealer pattern anomaly — rules passed but agent fired.</div>
+          <span class="emotion em-neutral">Curious</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Reads AI summary</div>
+          <div class="cell-detail">Statistical pattern explanation in plain language.</div>
+          <span class="emotion em-positive">Informed</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Reviews counter</div>
+          <div class="cell-detail">Leakage prevented total, flags caught, accuracy %.</div>
+          <span class="emotion em-positive">Accountable</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bp-row row-frontstage">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Front stage<br>(visible UI)</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Savings counter visible</div>
+          <div class="cell-detail">Totals across all reviewer decisions shown top of page.</div>
+          <span class="comp-badge">SavingsCounter.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Anomaly tab active</div>
+          <div class="cell-detail">Only amber-badged rows shown. Dealer IDs visible.</div>
+          <span class="comp-badge">ClaimQueue.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Detail view</div>
+          <div class="cell-detail">Anomaly badge in metadata. AI summary loading skeleton.</div>
+          <span class="comp-badge">ClaimDetail.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">AI summary — anomaly narrative</div>
+          <div class="cell-detail">Pattern explanation. Policy flags show PASS but anomaly fired.</div>
+          <span class="comp-badge">AISummaryPanel.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Counter updates</div>
+          <div class="cell-detail">Claims reviewed · Flags caught · Leakage prevented · Accuracy %</div>
+          <span class="comp-badge">SavingsCounter.jsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider-line"><span>Line of visibility — manager cannot see below this line</span></div>
+
+    <div class="bp-row row-backstage">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Back stage<br>(hidden logic)</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">All claims pre-sorted</div>
+          <div class="cell-detail">Flagged + Anomaly float to top by amount.</div>
+          <span class="comp-badge">claimsStore.js</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Filter selector</div>
+          <div class="cell-detail">groundTruth === 'anomaly' filter applied.</div>
+          <span class="comp-badge">ClaimQueue.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">State update</div>
+          <div class="cell-detail">activeClaimId → CLM-00004. Agent results loaded.</div>
+          <span class="comp-badge">App.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">summarizeClaim()</div>
+          <div class="cell-detail">Anomaly context passed to summarizer for pattern narrative.</div>
+          <span class="fail-point">Fail: "Review manually" shown</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">decisions[] aggregated</div>
+          <div class="cell-detail">Counter derived from decisions state across all claimIds.</div>
+          <span class="comp-badge">App.jsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bp-row row-agent">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>AI agents</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Intake agent</div>
+          <div class="cell-detail">Normalises full batch of auto-approved claims.</div>
+          <span class="agent-badge">Intake</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Anomaly detection</div>
+          <div class="cell-detail">Flags dealer outliers + suspicious patterns across batch.</div>
+          <span class="agent-badge">Anomaly detection</span>
+        </div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell">
+          <div class="cell-action">Summarization agent</div>
+          <div class="cell-detail">Plain-language pattern narrative for the manager.</div>
+          <span class="agent-badge">Summarization</span>
+        </div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+      </div>
+    </div>
+
+    <div class="bp-row row-support">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Support<br>systems</div>
+      <div class="bp-cells">
+        <div class="bp-cell"><div class="cell-detail">claims.json · React state</div><span class="evidence">Data source</span></div>
+        <div class="bp-cell"><div class="cell-detail">claimsStore filter selector</div><span class="evidence">Filter logic</span></div>
+        <div class="bp-cell"><div class="cell-detail">App.jsx state</div><span class="evidence">State mgmt</span></div>
+        <div class="bp-cell"><div class="cell-detail">Anthropic SDK</div><span class="evidence">LLM API</span></div>
+        <div class="bp-cell"><div class="cell-detail">decisions[] derived metrics</div><span class="evidence">Metrics calc</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#E6F1FB;border:0.5px solid #B5D4F4"></div>Manager action</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#FAECE7;border:0.5px solid #F5C4B3"></div>Front stage</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#EEEDFE;border:0.5px solid #CECBF6"></div>Back stage</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#E1F5EE;border:0.5px solid #9FE1CB"></div>AI agents</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#F1EFE8;border:0.5px solid #D3D1C7"></div>Support systems</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- JOURNEY 3 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="j3" class="blueprint">
+  <div class="journey-header">
+    <span class="journey-title">J3 · High-value claim escalation</span>
+    <span class="journey-tag" style="background:#FAECE7;color:#712B13;">Reviewer</span>
+    <span class="journey-tag" style="background:#E1F5EE;color:#085041;">Ops manager</span>
+  </div>
+  <p class="journey-desc">Proves escalation routing and human-in-the-loop governance. The system recognises ambiguity, flags it explicitly, and routes to the right human — without over-automating.</p>
+
+  <div class="bp-grid">
+    <div class="bp-stages">
+      <div class="bp-stage-label">Swimlane</div>
+      <div class="bp-stage-cells">
+        <div class="bp-stage-cell">1 · Claim surfaces</div>
+        <div class="bp-stage-cell">2 · Reviewer opens</div>
+        <div class="bp-stage-cell">3 · AI recommends escalate</div>
+        <div class="bp-stage-cell">4 · Reviewer escalates</div>
+        <div class="bp-stage-cell">5 · Manager reviews queue</div>
+        <div class="bp-stage-cell">6 · Audit trail</div>
+      </div>
+    </div>
+
+    <div class="bp-row row-customer">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Reviewer<br>actions</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Sees flagged claim</div>
+          <div class="cell-detail">Sorted to top by severity and amount.</div>
+          <span class="emotion em-alert">Alert</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Opens CLM-00005</div>
+          <div class="cell-detail">Borderline ECM diagnosis. Medium severity.</div>
+          <span class="emotion em-neutral">Uncertain</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Reads escalation recommendation</div>
+          <div class="cell-detail">Amber Review badge. Medium confidence. R-10 visible.</div>
+          <span class="emotion em-neutral">Supported</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Clicks Escalate</div>
+          <div class="cell-detail">One click. Returns to queue.</div>
+          <span class="emotion em-positive">Decisive</span>
+        </div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell">
+          <div class="cell-action">Reopens claim</div>
+          <div class="cell-detail">Prior decision badge still visible. Can revise.</div>
+          <span class="emotion em-positive">Confident</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bp-row" style="border-top: 0.5px solid #e8e6e0;">
+      <div class="bp-row-label" style="background:#E1F5EE;color:#085041;"><span class="row-icon">&#9679;</span>Manager<br>actions</div>
+      <div class="bp-cells">
+        <div class="bp-cell" style="background:#f4fdf9;"><span class="cell-empty">—</span></div>
+        <div class="bp-cell" style="background:#f4fdf9;"><span class="cell-empty">—</span></div>
+        <div class="bp-cell" style="background:#f4fdf9;"><span class="cell-empty">—</span></div>
+        <div class="bp-cell" style="background:#f4fdf9;"><span class="cell-empty">—</span></div>
+        <div class="bp-cell" style="background:#f4fdf9;">
+          <div class="cell-action">Filters escalated claims</div>
+          <div class="cell-detail">Sees contested + escalated together. Amount visible.</div>
+          <span class="emotion em-positive">In control</span>
+        </div>
+        <div class="bp-cell" style="background:#f4fdf9;">
+          <div class="cell-action">Reviews audit trail</div>
+          <div class="cell-detail">Prior decision badge. AI summary unchanged.</div>
+          <span class="emotion em-positive">Accountable</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bp-row row-frontstage">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Front stage<br>(visible UI)</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Flagged + Anomaly rows</div>
+          <div class="cell-detail">Sorted above clean claims. Amount column visible.</div>
+          <span class="comp-badge">ClaimRow.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Detail view opens</div>
+          <div class="cell-detail">Metadata panel + loading skeleton.</div>
+          <span class="comp-badge">ClaimDetail.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Review badge — amber</div>
+          <div class="cell-detail">Medium confidence. R-10 FAIL visible with severity.</div>
+          <span class="comp-badge">AISummaryPanel.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Escalate button active</div>
+          <div class="cell-detail">Claim → amber badge. Queue auto-advances.</div>
+          <span class="comp-badge">ActionBar.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Escalated claims visible</div>
+          <div class="cell-detail">Amber badge in Status column. Filter works.</div>
+          <span class="comp-badge">ClaimQueue.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Prior decision badge</div>
+          <div class="cell-detail">Action bar still functional — decision revisable.</div>
+          <span class="comp-badge">ClaimDetail.jsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider-line"><span>Line of visibility</span></div>
+
+    <div class="bp-row row-backstage">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Back stage<br>(hidden logic)</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Sort by severity + amount</div>
+          <div class="cell-detail">overallSeverity from agent drives rank.</div>
+          <span class="comp-badge">claimsStore.js</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Agent results loaded</div>
+          <div class="cell-detail">Pre-run results for CLM-00005 served instantly.</div>
+          <span class="comp-badge">useAgents.js</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">summarizeClaim()</div>
+          <div class="cell-detail">recommendation → 'review'. confidence → 'medium'.</div>
+          <span class="fail-point">Fail: amber warning</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">decisions[CLM-00005] = 'escalate'</div>
+          <div class="cell-detail">State updated. Claims reviewed +1.</div>
+          <span class="comp-badge">App.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Filter: escalated</div>
+          <div class="cell-detail">claimsStore returns decisions[id] === 'escalate'.</div>
+          <span class="comp-badge">claimsStore.js</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Decisions state persists</div>
+          <div class="cell-detail">React state held in App.jsx — revisable in session.</div>
+          <span class="comp-badge">App.jsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bp-row row-agent">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>AI agents</div>
+      <div class="bp-cells">
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell">
+          <div class="cell-action">Policy + anomaly agents</div>
+          <div class="cell-detail">Score risk level. R-10 fires at medium severity.</div>
+          <span class="agent-badge">Policy validation</span>
+          <br><span class="agent-badge">Anomaly detection</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Escalation routing logic</div>
+          <div class="cell-detail">medium severity → recommendation: 'review'.</div>
+          <span class="agent-badge">Escalation</span>
+        </div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+      </div>
+    </div>
+
+    <div class="bp-row row-support">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Support<br>systems</div>
+      <div class="bp-cells">
+        <div class="bp-cell"><div class="cell-detail">claimsStore selectors</div><span class="evidence">Sort logic</span></div>
+        <div class="bp-cell"><div class="cell-detail">useAgents pre-run cache</div><span class="evidence">Agent cache</span></div>
+        <div class="bp-cell"><div class="cell-detail">Anthropic SDK</div><span class="evidence">LLM API</span></div>
+        <div class="bp-cell"><div class="cell-detail">App.jsx decisions[]</div><span class="evidence">State</span></div>
+        <div class="bp-cell"><div class="cell-detail">claimsStore filter</div><span class="evidence">Filter logic</span></div>
+        <div class="bp-cell"><div class="cell-detail">React state (session only)</div><span class="evidence">Persistence</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#E6F1FB;border:0.5px solid #B5D4F4"></div>Reviewer action</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#E1F5EE;border:0.5px solid #9FE1CB"></div>Manager action / AI agents</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#FAECE7;border:0.5px solid #F5C4B3"></div>Front stage</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#EEEDFE;border:0.5px solid #CECBF6"></div>Back stage</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#F1EFE8;border:0.5px solid #D3D1C7"></div>Support systems</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- JOURNEY 4 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="j4" class="blueprint">
+  <div class="journey-header">
+    <span class="journey-title">J4 · Customer claim result, contest, and resolution</span>
+    <span class="journey-tag" style="background:#E6F1FB;color:#0C447C;">Customer</span>
+    <span class="journey-tag" style="background:#E1F5EE;color:#085041;">Warranty specialist</span>
+  </div>
+  <p class="journey-desc">Proves closed-loop intelligence. Customer receives a plain-language decision, contests it, the agent re-validates, and a specialist resolves with AI assistance. Demonstrated via CLM-00005.</p>
+
+  <div class="bp-grid">
+    <div class="bp-stages">
+      <div class="bp-stage-label">Swimlane</div>
+      <div class="bp-stage-cells">
+        <div class="bp-stage-cell">1 · Result delivered</div>
+        <div class="bp-stage-cell">2 · Customer contests</div>
+        <div class="bp-stage-cell">3 · Agent re-validates</div>
+        <div class="bp-stage-cell">4 · Specialist receives</div>
+        <div class="bp-stage-cell">5 · Specialist reviews brief</div>
+        <div class="bp-stage-cell">6 · Decision issued</div>
+        <div class="bp-stage-cell">7 · Customer notified</div>
+      </div>
+    </div>
+
+    <!-- Customer row -->
+    <div class="bp-row row-customer">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Customer<br>actions</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Receives denied result</div>
+          <div class="cell-detail">Reads plain-language explanation + policy reference.</div>
+          <span class="emotion em-negative">Frustrated</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Clicks "I disagree"</div>
+          <div class="cell-detail">Submits reason + diagnostic report as evidence.</div>
+          <span class="emotion em-neutral">Empowered</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Waits — checks status</div>
+          <div class="cell-detail">Step 2 of tracker: "Under review".</div>
+          <span class="emotion em-neutral">Informed</span>
+        </div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell">
+          <div class="cell-action">Reads final ruling</div>
+          <div class="cell-detail">"Overturned" banner in green. Specialist ruling text. Case closed.</div>
+          <span class="emotion em-positive">Respected</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Specialist row -->
+    <div class="bp-row" style="border-top: 0.5px solid #e8e6e0;">
+      <div class="bp-row-label" style="background:#E1F5EE;color:#085041;"><span class="row-icon">&#9679;</span>Warranty<br>specialist</div>
+      <div class="bp-cells">
+        <div class="bp-cell" style="background:#f4fdf9;"><span class="cell-empty">—</span></div>
+        <div class="bp-cell" style="background:#f4fdf9;"><span class="cell-empty">—</span></div>
+        <div class="bp-cell" style="background:#f4fdf9;"><span class="cell-empty">—</span></div>
+        <div class="bp-cell" style="background:#f4fdf9;">
+          <div class="cell-action">Opens workspace</div>
+          <div class="cell-detail">Sees claim, original decision, contest reason, evidence.</div>
+          <span class="emotion em-positive">Prepared</span>
+        </div>
+        <div class="bp-cell" style="background:#f4fdf9;">
+          <div class="cell-action">Reads AI brief</div>
+          <div class="cell-detail">Classification, evidence assessment, precedents, gaps, recommendation.</div>
+          <span class="emotion em-positive">Supported</span>
+        </div>
+        <div class="bp-cell" style="background:#f4fdf9;">
+          <div class="cell-action">Enters notes, clicks Overturn</div>
+          <div class="cell-detail">Resolution notes required. Audit trail created.</div>
+          <span class="emotion em-positive">Authoritative</span>
+        </div>
+        <div class="bp-cell" style="background:#f4fdf9;"><span class="cell-empty">—</span></div>
+      </div>
+    </div>
+
+    <!-- Front stage -->
+    <div class="bp-row row-frontstage">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Front stage<br>(visible UI)</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Claim result notification</div>
+          <div class="cell-detail">Denied banner. 2–3 sentence explanation. Policy rule cited. Contest CTA visible.</div>
+          <span class="comp-badge">CustomerPortal.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Contest form</div>
+          <div class="cell-detail">Reason textarea + mock file upload + optional context. Submit button.</div>
+          <span class="comp-badge">ContestForm.jsx</span>
+          <br><span class="fail-point">Fail: must handle empty reason</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Status tracker — step 2</div>
+          <div class="cell-detail">"Your contest is being reviewed." Step 2 highlighted.</div>
+          <span class="comp-badge">ContestStatusTracker.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Specialist workspace</div>
+          <div class="cell-detail">Left col: claim + contest. Right col: AI brief loading.</div>
+          <span class="comp-badge">SpecialistWorkspace.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">AI resolution brief</div>
+          <div class="cell-detail">Classification · Evidence assessment · Precedents · Gaps · Recommendation</div>
+          <span class="comp-badge">ResolutionBriefPanel.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Action bar — notes required</div>
+          <div class="cell-detail">Overturn / Uphold / Partial / Request info. Notes field gated.</div>
+          <span class="comp-badge">SpecialistWorkspace.jsx</span>
+          <br><span class="fail-point">Fail: notes empty → button disabled</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Resolution panel</div>
+          <div class="cell-detail">Overturned banner. Specialist ruling text. Case closed notice.</div>
+          <span class="comp-badge">CustomerPortal.jsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider-line"><span>Line of visibility</span></div>
+
+    <!-- Back stage -->
+    <div class="bp-row row-backstage">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Back stage<br>(hidden logic)</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">generateCustomerExplanation()</div>
+          <div class="cell-detail">claim + validation → plain-language + rule reference.</div>
+          <span class="comp-badge">useAgents.js</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">contestData state updated</div>
+          <div class="cell-detail">contestStatus → 'submitted'. reason + evidence stored.</div>
+          <span class="comp-badge">App.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">Re-validation pipeline</div>
+          <div class="cell-detail">validateClaim() re-run with contest evidence context.</div>
+          <span class="comp-badge">useAgents.js</span>
+          <br><span class="fail-point">Fail: route to specialist directly</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">contestStatus → 'under_review'</div>
+          <div class="cell-detail">State update triggers status tracker step 2.</div>
+          <span class="comp-badge">App.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">generateResolutionBrief()</div>
+          <div class="cell-detail">claim + validation + contest → brief object.</div>
+          <span class="comp-badge">useAgents.js</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">contestData.resolution set</div>
+          <div class="cell-detail">contestStatus → 'resolved'. Specialist notes stored.</div>
+          <span class="comp-badge">App.jsx</span>
+        </div>
+        <div class="bp-cell">
+          <div class="cell-action">State propagates to portal</div>
+          <div class="cell-detail">Same React state — customer portal re-renders instantly.</div>
+          <span class="comp-badge">App.jsx</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI agents -->
+    <div class="bp-row row-agent">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>AI agents</div>
+      <div class="bp-cells">
+        <div class="bp-cell">
+          <div class="cell-action">Customer explanation agent</div>
+          <div class="cell-detail">Converts validation output to plain language. contestEligible flag set.</div>
+          <span class="agent-badge">generateCustomerExplanation</span>
+        </div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell">
+          <div class="cell-action">Policy validation agent</div>
+          <div class="cell-detail">Re-validates with new evidence. Auto-resolve if clear.</div>
+          <span class="agent-badge">Policy validation</span>
+        </div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell">
+          <div class="cell-action">Resolution brief agent</div>
+          <div class="cell-detail">Classification · Evidence assessment · Precedents · Gaps · Recommendation</div>
+          <span class="agent-badge">generateResolutionBrief</span>
+        </div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+        <div class="bp-cell"><span class="cell-empty">—</span></div>
+      </div>
+    </div>
+
+    <!-- Support systems -->
+    <div class="bp-row row-support">
+      <div class="bp-row-label"><span class="row-icon">&#9679;</span>Support<br>systems</div>
+      <div class="bp-cells">
+        <div class="bp-cell"><div class="cell-detail">Anthropic SDK · rules.json</div><span class="evidence">LLM + policy</span></div>
+        <div class="bp-cell"><div class="cell-detail">contestData[] React state</div><span class="evidence">State</span></div>
+        <div class="bp-cell"><div class="cell-detail">Anthropic SDK · claims.json</div><span class="evidence">Re-validation</span></div>
+        <div class="bp-cell"><div class="cell-detail">App.jsx state</div><span class="evidence">Status mgmt</span></div>
+        <div class="bp-cell"><div class="cell-detail">Anthropic SDK · mock precedents</div><span class="evidence">LLM + data</span></div>
+        <div class="bp-cell"><div class="cell-detail">contestData.resolution store</div><span class="evidence">Resolution store</span></div>
+        <div class="bp-cell"><div class="cell-detail">Shared App.jsx state</div><span class="evidence">Shared state</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#E6F1FB;border:0.5px solid #B5D4F4"></div>Customer action</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#E1F5EE;border:0.5px solid #9FE1CB"></div>Specialist action / AI agents</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#FAECE7;border:0.5px solid #F5C4B3"></div>Front stage</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#EEEDFE;border:0.5px solid #CECBF6"></div>Back stage</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#F1EFE8;border:0.5px solid #D3D1C7"></div>Support systems</div>
+    <div class="legend-item"><span class="fail-point">Red pill</span>&nbsp;= failure point / guard condition</div>
+  </div>
+</div>
+
+<script>
+function showJourney(id) {
+  document.querySelectorAll('.blueprint').forEach(b => b.classList.remove('visible'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  event.target.classList.add('active');
+}
+</script>
+</html>

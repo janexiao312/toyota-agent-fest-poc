@@ -1,17 +1,17 @@
-export default function ClaimRow({ claim, status, decision, onSelect, onDecision }) {
+export default function ClaimRow({ claim, status, decision, contestStatus, isLoading, onSelect, onDecision }) {
   const formatDate = (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00')
     return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`
   }
 
-  const formatCurrency = (amount) => {
-    return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  }
+  const formatCurrency = (amount) =>
+    `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
   const statusBadge = {
     Clean: 'bg-blue-100 text-blue-800',
     Flagged: 'bg-red-100 text-red-800',
     Anomaly: 'bg-amber-100 text-amber-800',
+    Contested: 'bg-orange-100 text-orange-800',
   }
 
   const decisionBadge = {
@@ -46,7 +46,11 @@ export default function ClaimRow({ claim, status, decision, onSelect, onDecision
         </span>
       </td>
       <td className="px-4 py-3">
-        {decision ? (
+        {isLoading ? (
+          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500 animate-pulse">
+            Analysing…
+          </span>
+        ) : decision ? (
           <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full capitalize ${decisionBadge[decision]}`}>
             {decision}
           </span>
@@ -54,6 +58,15 @@ export default function ClaimRow({ claim, status, decision, onSelect, onDecision
           <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusBadge[status]}`}>
             {status}
           </span>
+        )}
+      </td>
+      <td className="px-4 py-3">
+        {contestStatus && contestStatus !== 'none' ? (
+          <span className="bg-orange-100 text-orange-800 text-xs font-semibold px-3 py-1 rounded-full capitalize">
+            {contestStatus.replace('_', ' ')}
+          </span>
+        ) : (
+          <span className="text-gray-300 text-xs">—</span>
         )}
       </td>
       <td className="px-4 py-3">
