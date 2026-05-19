@@ -398,33 +398,44 @@ The UI is considered complete when all of the following pass:
 
 - [ ] Claim queue loads all 55 claims from `claims.json` without errors
 - [ ] Flagged and Anomaly claims sort above clean claims by default
-- [ ] Filter tabs correctly show only claims matching the selected `groundTruth`
+- [ ] Filter tabs correctly show only claims matching the selected `groundTruth`; Escalated tab shows escalated claims
 - [ ] Clicking any claim opens the detail view without page refresh
 - [ ] AI summary panel shows a loading state while agents are running
+- [ ] AI summary cites specific numbers and thresholds — not vague adjectives (Design principle 1)
 - [ ] Policy flags panel renders pass/fail per rule with correct severity badges
 - [ ] Approve action marks the claim green and returns to queue
 - [ ] Reject action increments leakage prevented in the savings counter
 - [ ] Escalate action marks the claim with an amber badge
+- [ ] After any decision, next flagged/anomaly claim auto-selects (tight loop, no friction)
 - [ ] All 5 hero claims tell their story clearly without verbal explanation
 - [ ] Savings counter updates correctly after each reviewer decision
+- [ ] `Analysing...` spinner visible on claim rows while agents are processing
 
 **Customer portal surface**
 
+- [ ] Pending state shows progress tracker, claim details recap, verification checklist, timeline, and support contact when no decision exists
+- [ ] Pending state transitions to decision view when `decisions[claimId]` becomes non-null
 - [ ] Claim result notification renders plain-language explanation for `CLM-00005`
-- [ ] Contest CTA visible when claim is Denied or Partially approved
+- [ ] Explanation cites specific thresholds and amounts — not policy boilerplate (Design principle 1)
+- [ ] Contest CTA visible and prominent when claim is Denied or Partially approved (Design principle 6)
 - [ ] Contest form accepts reason text and mock evidence filenames
 - [ ] `contestStatus` updates to `submitted` immediately on form submit
 - [ ] Status tracker shows correct step highlight for each `contestStatus` value
+- [ ] Status tracker messaging explains what's happening at each step (not just status labels)
 - [ ] Resolution panel renders when `contestStatus` is `resolved`
+- [ ] Both overturn AND uphold resolutions include plain-language explanation (Design principle 5)
 - [ ] Agent-generated explanation is readable without any warranty domain knowledge
 
 **Specialist workspace surface**
 
 - [ ] Workspace loads `CLM-00005` with full claim detail and contest context in left column
 - [ ] AI resolution brief renders with classification, evidence assessment, precedents, gaps, and recommendation in right column
+- [ ] AI brief is positioned as research prep — not as a pre-made decision (Design principle 2)
 - [ ] Resolution notes field is required before any action button activates
+- [ ] "Notes required" helper text visible when notes field is empty
 - [ ] Overturn action sets `contestResolution` and updates status to `resolved`
 - [ ] Resolved status reflects in the customer portal view immediately (same React state)
+- [ ] All context visible in one surface — no switching between tools required (Design principle 4)
 
 ---
 
@@ -461,13 +472,148 @@ Use these Tailwind classes consistently across components to maintain visual coh
 
 ### Personas
 
-**The warranty reviewer** — an internal Toyota operations analyst who processes warranty claims daily. Currently works through a manual queue with no AI assistance. Time-pressured, sceptical of new tools until proven, motivated by accuracy and throughput. Does not need to understand how the AI works — only that its flags are trustworthy and explainable.
+#### The Warranty Analyst (primary user)
 
-**The claims operations manager** — oversees the reviewer team and is accountable for leakage metrics, throughput, and escalation rates. Looks at the savings counter and pattern-level signals. Interested in what the system is catching that humans were missing.
+> "I need to know *why* it was flagged, not just *that* it was flagged. Give me that and I can move fast."
 
-**The customer** — a Toyota vehicle owner who submitted a warranty claim through a dealer. Non-technical. Expects a clear explanation of the decision. If denied, they want to understand why and have a credible path to contest it. Trust in Toyota depends on how this moment is handled.
+A mid-senior Toyota operations employee who owns warranty claims end to end — from first-pass queue review through to contested claim resolution. They are the decision-maker. The AI is their preparation layer. They currently work through a manual queue, reading raw repair orders and cross-referencing policy rules in a separate document. Accurate but slow.
 
-**The warranty specialist** — a senior Toyota employee who handles escalated contests. Deep policy knowledge. Does not want to be second-guessed by AI but will accept AI-generated context that saves them research time. Final decision authority always rests with them.
+**How they use the product — 3-touch lifecycle:**
+
+1. **First-pass review** — Opens the queue, sees flagged claims sorted to top. Reads AI narrative; if specific and citing exact thresholds, they decide in seconds. Clicks Reject/Approve/Escalate. Counter increments. Moves on.
+2. **Escalation return** — A claim they previously escalated comes back. The claim detail shows the timeline so they can see what they decided and why. The AI brief updates if anything changed.
+3. **Contest resolution** — A claim they rejected is contested. The resolution brief shows exactly what is new: customer evidence, re-validation results, how the picture changed. They enter ruling notes and close the case.
+
+**What builds trust:**
+- Specificity in the AI narrative — "8.5 labor hours against a 2.0-hour policy limit — a 325% overage" earns trust. "Labor hours appear elevated" does not.
+- Explainability at every step — recommendation badge + confidence level + per-rule breakdown
+- Stable UI across claim states — one surface that adapts, not two interfaces to learn
+- Final authority is unambiguous — the brief is a prepared dossier, not a pre-made decision
+
+**What erodes trust:**
+- Vague or hedged narrative output that requires going back to raw data
+- The amber "Unable to analyse" state appearing unpredictably
+- Any design pattern implying the AI recommendation IS the decision rather than an input to their decision
+
+**Key metrics:** Claims reviewed per session · decision accuracy · time to clear contested queue
+
+**Touchpoints:** `ClaimQueue` · `ClaimDetail` · `AISummaryPanel` · `PolicyFlagsPanel` · `ActionBar` · `ResolutionBriefPanel` · `SavingsCounter`
+
+---
+
+#### The Claims Operations Manager
+
+> "I don't need to open every claim. I need to know if the system is catching what it should — and I need a number I can take upstairs."
+
+A senior Toyota operations leader accountable for leakage metrics, throughput rates, and escalation volumes. Not in the queue all day — in the queue when something looks wrong, when they need to report results, or when evaluating system performance. Thinks in patterns, not individual cases. A single fraudulent claim is an analyst's problem; a dealer submitting 14 ECM claims in 30 days against a regional average of 2 is their problem.
+
+**How they use the product:**
+- **Morning queue review** — Checks savings counter totals. Leakage prevented and accuracy % tell them at a glance whether the overnight batch processed cleanly.
+- **Anomaly investigation** — Filters to Anomaly tab. Amber-badged claims visible; dealer IDs clustered. Clicks into a pattern anomaly — AI brief explains the statistical signal in plain language, not a score.
+- **Reporting** — Pulls savings counter metrics to build leadership reports. Numbers already there; no export needed.
+
+**What builds trust:**
+- Pattern-level language in the anomaly brief — "This dealer has submitted 14 ECM-related claims in 30 days against a regional average of 2" is actionable. A fraud score is not.
+- Live metrics always visible — savings counter on every view, updating in real time
+- Anomaly detection beyond the rules engine — claims that passed all rules but the agent still flagged
+
+**What erodes trust:**
+- Accuracy % dropping without explanation
+- Anomaly flags that turn out to be false positives at high rates
+- Metrics that don't match what they can independently verify
+
+**Key metrics:** Leakage prevented ($) · flags caught vs. total (accuracy %) · anomaly detection rate · escalation rate
+
+**Touchpoints:** `SavingsCounter` · `ClaimQueue` (Anomaly tab) · `AISummaryPanel` (pattern narrative) · `ClaimDetail` (drill-in only)
+
+---
+
+#### The Customer
+
+> "I just need to understand why my claim was denied. And if I think they got it wrong, I want a real way to push back."
+
+A Toyota vehicle owner who submitted a warranty claim through a dealer. Not a warranty expert. Does not know what R-10 means. Their relationship with Toyota is long-term — a denial that feels arbitrary doesn't just close a claim; it affects how they feel about the brand.
+
+**How they use the product — 4-touch lifecycle:**
+
+1. **Waiting for a result** — Checks the portal. Sees their claim is under review with a progress tracker, details recap, and timeline expectation. Feels informed rather than ignored.
+2. **Receiving the result** — Reads the decision notification. The plain-language explanation names the specific rule and threshold. Not "your claim did not meet policy requirements" but "your claim submitted 8.5 labor hours for this repair; the policy limit is 2.0 hours."
+3. **Contesting the decision** — Clicks "I disagree." Submits reason + evidence. Sees immediate confirmation. Status tracker advances.
+4. **Receiving the resolution** — Tracker lands on resolved. Resolution panel shows outcome alongside specialist's plain-language ruling. Case closed with an explanation regardless of outcome.
+
+**What builds trust:**
+- Specific language, not policy boilerplate — must cite the actual numbers (labor hours, mileage, specific threshold)
+- A contest path that feels real — "I disagree" button visible without hunting, simple form, immediate confirmation
+- Status visibility during the wait — the tracker is the only thing between "heard nothing" and "I know where my case is"
+- A final ruling that explains itself — even upheld decisions come with plain-language explanation of why new evidence didn't change the outcome
+
+**What erodes trust:**
+- Explanation language requiring policy knowledge to interpret
+- Contest CTA that is hard to find or visually de-emphasised
+- Status tracker not advancing, or advancing to "resolved" before ruling text is available
+- Overturned decision with no explanation of what changed
+
+**Key metrics (from Toyota's perspective):** Contest submission rate · resolution time · overturn rate · explanation completeness
+
+**Touchpoints:** `CustomerPortal` · `ContestForm` · `ContestStatusTracker` · resolution notification panel
+
+---
+
+#### The Warranty Specialist
+
+> "I need all the context in one place so I can make a ruling. Don't tell me what to decide — tell me what's changed."
+
+A senior Toyota employee who handles escalated contests. Deep policy knowledge built over years. Does not want to be second-guessed by AI but will accept AI-generated context that saves research time. Final decision authority always rests with them — the product must make this unambiguous.
+
+**How they use the product:**
+- Opens specialist workspace when a contested claim lands in their queue
+- Reads left column (original claim + AI decision + contest details) to build context
+- Reads right column (AI resolution brief) for classification, evidence assessment, precedents, gaps
+- Enters resolution notes (required) and issues ruling
+
+**What builds trust:**
+- All context in one surface — no switching between tools or looking up the original claim separately
+- AI brief positioned as research assistant output, not recommendation to rubber-stamp
+- Precedent citations that are specific and verifiable
+- Required notes field — makes the audit trail their own words, not AI-generated
+
+**What erodes trust:**
+- AI recommendation that feels presumptuous or overconfident
+- Missing context that forces them to dig elsewhere
+- Resolution pathway that feels like a checkbox exercise rather than a real judgment
+
+**Key metrics:** Resolution time · overturn/uphold ratio · audit trail completeness
+
+**Touchpoints:** `SpecialistWorkspace` · `ResolutionBriefPanel` · resolution action bar
+
+---
+
+### Persona comparison
+
+| | Warranty Analyst | Ops Manager | Customer | Specialist |
+|---|---|---|---|---|
+| **Primary goal** | Close claims accurately and fast | Detect leakage patterns and report results | Understand the decision and contest if needed | Review contested claims with full context and rule fairly |
+| **Primary surface** | Claim queue + claim detail | Anomaly tab + savings counter | Customer portal | Specialist workspace |
+| **Relationship with AI** | Trusts when specific; verifies before acting | Trusts patterns; sceptical of individual scores | Unaware of AI; experiences only the output | Accepts as research prep; final call is theirs |
+| **Decision authority** | Full — Approve / Escalate / Reject | None — observes and assigns | None — submits and waits | Full — Overturn / Uphold / Partial |
+| **Trust built by** | Specificity, explainability, stable UI | Pattern language, live metrics, anomaly precision | Plain language, contest visibility, tracker accuracy | Complete context, positioned as assistant not authority |
+| **Trust broken by** | Vague output, unpredictable errors | High false positive rate, metric inconsistency | Boilerplate denials, no response, unexplained rulings | Presumptuous recommendations, missing context |
+| **Volume of interaction** | High — daily, all-day queue work | Low to medium — monitoring | One-time or rare — per claim lifecycle | Low — escalated contests only |
+
+---
+
+### Design principles derived from personas
+
+These principles should be applied across all surfaces. They are not aspirational — they are acceptance criteria.
+
+| # | Principle | Rationale | Applies to |
+|---|---|---|---|
+| 1 | **Cite numbers, not adjectives** | The analyst trusts "325% overage" but not "elevated." The customer trusts "$1,240 against a $380 limit" but not "exceeded policy." | `AISummaryPanel`, `PolicyFlagsPanel`, `CustomerPortal` |
+| 2 | **AI prepares; human decides** | Every surface must position AI output as input to a decision, never as the decision itself. Recommendation badges are suggestions; action buttons are authority. | `ActionBar`, `SpecialistWorkspace`, `ResolutionBriefPanel` |
+| 3 | **Status must always be visible and accurate** | The customer's trust depends entirely on the tracker advancing. The manager's trust depends on the counter being live. Stale state destroys confidence. | `ContestStatusTracker`, `SavingsCounter`, `ClaimRow` status badges |
+| 4 | **One surface adapts; not multiple to learn** | The analyst touches the same claim at 3 lifecycle points. The layout should stay consistent — only the action bar and available context should change based on claim state. | `ClaimDetail`, `ActionBar`, overall layout |
+| 5 | **Silence is the worst outcome** | Every state must show something — pending shows progress, errors show fallback guidance, empty queues show confirmation. No blank screens, no unexplained waits. | `CustomerPortal` pending state, `AISummaryPanel` error state, `ClaimQueue` empty state |
+| 6 | **Contest path must feel real, not buried** | The "I disagree" CTA must be prominent, not tucked into small text. The form must be simple. Confirmation must be immediate. | `CustomerPortal`, `ContestForm` |
 
 ---
 
