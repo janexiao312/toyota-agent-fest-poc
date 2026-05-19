@@ -1,0 +1,1272 @@
+[
+  {
+    "claimId": "CLM-00001",
+    "dealerId": "DLR-TX-047",
+    "vin": "4T1BF3EK8AU123456",
+    "claimDate": "2025-03-12",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 1.5,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 2,
+        "unitCost": 45.0
+      }
+    ],
+    "techNotes": "Customer reports brake noise on deceleration. Inspected front brake pads \u2014 worn to minimum thickness. Replaced front brake pads. Test drive confirmed noise resolved.",
+    "claimAmount": 187.5,
+    "vehicleMileage": 34200,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00002",
+    "dealerId": "DLR-CA-012",
+    "vin": "2T1BURHE0JC051234",
+    "claimDate": "2025-03-14",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 8.5,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 2,
+        "unitCost": 45.0
+      },
+      {
+        "code": "04512-02190",
+        "qty": 2,
+        "unitCost": 89.0
+      }
+    ],
+    "techNotes": "Customer reports brake noise. Replaced all four brake pads and rotors. Performed full brake system inspection and fluid flush.",
+    "claimAmount": 1247.0,
+    "vehicleMileage": 28100,
+    "warrantyType": "basic",
+    "groundTruth": "violation",
+    "violationHint": "Labor hours of 8.5 are 4x above the 2.0hr policy limit for brake pad replacement (B2799). Fluid flush not covered under basic warranty."
+  },
+  {
+    "claimId": "CLM-00003",
+    "dealerId": "DLR-FL-089",
+    "vin": "5TDKZ3DC8LS012345",
+    "claimDate": "2025-03-18",
+    "repairCodes": [
+      "C1201"
+    ],
+    "laborHours": 1.0,
+    "parts": [
+      {
+        "code": "89516-0C010",
+        "qty": 4,
+        "unitCost": 62.0
+      }
+    ],
+    "techNotes": "VSC warning light on dash. Scanned codes \u2014 wheel speed sensor fault. Replaced all four wheel speed sensors as preventative measure.",
+    "claimAmount": 314.0,
+    "vehicleMileage": 61400,
+    "warrantyType": "basic",
+    "groundTruth": "violation",
+    "violationHint": "Vehicle mileage of 61,400 exceeds the 36,000 mile basic warranty limit. Claim is ineligible. Additionally, replacing all 4 sensors when only one fault code is present is not supported."
+  },
+  {
+    "claimId": "CLM-00004",
+    "dealerId": "DLR-TX-047",
+    "vin": "JTDKARFU0H3512345",
+    "claimDate": "2025-03-20",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 1.5,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 2,
+        "unitCost": 45.0
+      }
+    ],
+    "techNotes": "Customer reports brake squeal. Front pads worn. Replaced front brake pads.",
+    "claimAmount": 187.5,
+    "vehicleMileage": 29800,
+    "warrantyType": "basic",
+    "groundTruth": "anomaly",
+    "violationHint": "Dealer DLR-TX-047 has submitted 6 claims for repair code B2799 in the past 14 days \u2014 all with identical labor hours of 1.5 and identical claimAmount of $187.50. Pattern is statistically improbable across different vehicles."
+  },
+  {
+    "claimId": "CLM-00005",
+    "dealerId": "DLR-OH-033",
+    "vin": "4T1B11HK0JU123456",
+    "claimDate": "2025-03-22",
+    "repairCodes": [
+      "U0100"
+    ],
+    "laborHours": 3.0,
+    "parts": [
+      {
+        "code": "89661-0E680",
+        "qty": 1,
+        "unitCost": 420.0
+      }
+    ],
+    "techNotes": "MIL on, lost communication with ECM. Diagnosed intermittent connection fault. Replaced ECM. Fault cleared \u2014 unable to fully verify root cause prior to replacement.",
+    "claimAmount": 694.0,
+    "vehicleMileage": 44100,
+    "warrantyType": "powertrain",
+    "groundTruth": "violation",
+    "violationHint": "ECM replacement without verified root cause is flagged under policy rule R-07. Powertrain warranty covers ECM but requires documented diagnostic evidence before replacement \u2014 tech notes explicitly state root cause was not verified."
+  },
+  {
+    "claimId": "CLM-00006",
+    "dealerId": "DLR-GA-071",
+    "vin": "3TMCZ5AN0L181960",
+    "claimDate": "2025-01-04",
+    "repairCodes": [
+      "C1201"
+    ],
+    "laborHours": 0.9,
+    "parts": [
+      {
+        "code": "89516-0C010",
+        "qty": 2,
+        "unitCost": 62.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for wheel speed sensor. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 209.5,
+    "vehicleMileage": 12314,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00007",
+    "dealerId": "DLR-CA-012",
+    "vin": "3TMCZ5AN0L863794",
+    "claimDate": "2025-01-01",
+    "repairCodes": [
+      "C1201"
+    ],
+    "laborHours": 1.1,
+    "parts": [
+      {
+        "code": "89516-0C010",
+        "qty": 2,
+        "unitCost": 62.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for wheel speed sensor. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 228.5,
+    "vehicleMileage": 5869,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00008",
+    "dealerId": "DLR-FL-089",
+    "vin": "4T1BF3EK8A161559",
+    "claimDate": "2025-02-03",
+    "repairCodes": [
+      "U0100"
+    ],
+    "laborHours": 2.2,
+    "parts": [
+      {
+        "code": "89661-0E680",
+        "qty": 1,
+        "unitCost": 420.0
+      }
+    ],
+    "techNotes": "Customer complaint: ECM communication fault. Visual and diagnostic inspection performed. Component replaced within labor guidelines. Vehicle returned to normal operation.",
+    "claimAmount": 629.0,
+    "vehicleMileage": 19110,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00009",
+    "dealerId": "DLR-NY-055",
+    "vin": "4T1B11HK0J495931",
+    "claimDate": "2025-01-06",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 1.1,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 2,
+        "unitCost": 45.0
+      }
+    ],
+    "techNotes": "Customer reports brake pad replacement. Inspected system \u2014 confirmed fault. Replaced defective component. Test drive confirms issue resolved.",
+    "claimAmount": 194.5,
+    "vehicleMileage": 29807,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00010",
+    "dealerId": "DLR-TX-047",
+    "vin": "5TDKZ3DC8L752553",
+    "claimDate": "2025-03-27",
+    "repairCodes": [
+      "P0420"
+    ],
+    "laborHours": 2.2,
+    "parts": [
+      {
+        "code": "17150-0P030",
+        "qty": 1,
+        "unitCost": 380.0
+      }
+    ],
+    "techNotes": "Routine warranty inspection identified catalytic converter. Replaced affected component. Customer notified and satisfied with repair.",
+    "claimAmount": 589.0,
+    "vehicleMileage": 11619,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00011",
+    "dealerId": "DLR-NY-055",
+    "vin": "2T1BURHE0J764835",
+    "claimDate": "2025-01-08",
+    "repairCodes": [
+      "B1420"
+    ],
+    "laborHours": 1.2,
+    "parts": [
+      {
+        "code": "87103-0E050",
+        "qty": 1,
+        "unitCost": 95.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for HVAC blower motor. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 209.0,
+    "vehicleMileage": 22502,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00012",
+    "dealerId": "DLR-WA-018",
+    "vin": "2T1BURHE0J953767",
+    "claimDate": "2025-01-19",
+    "repairCodes": [
+      "P0420"
+    ],
+    "laborHours": 1.6,
+    "parts": [
+      {
+        "code": "17150-0P030",
+        "qty": 1,
+        "unitCost": 380.0
+      }
+    ],
+    "techNotes": "Customer reports catalytic converter. Inspected system \u2014 confirmed fault. Replaced defective component. Test drive confirms issue resolved.",
+    "claimAmount": 532.0,
+    "vehicleMileage": 22546,
+    "warrantyType": "powertrain",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00013",
+    "dealerId": "DLR-CA-012",
+    "vin": "3TMCZ5AN0L969653",
+    "claimDate": "2025-01-18",
+    "repairCodes": [
+      "B1420"
+    ],
+    "laborHours": 1.3,
+    "parts": [
+      {
+        "code": "87103-0E050",
+        "qty": 1,
+        "unitCost": 95.0
+      }
+    ],
+    "techNotes": "Customer complaint: HVAC blower motor. Visual and diagnostic inspection performed. Component replaced within labor guidelines. Vehicle returned to normal operation.",
+    "claimAmount": 218.5,
+    "vehicleMileage": 22661,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00014",
+    "dealerId": "DLR-TX-047",
+    "vin": "3TMCZ5AN0L269166",
+    "claimDate": "2025-03-18",
+    "repairCodes": [
+      "P0172"
+    ],
+    "laborHours": 1.3,
+    "parts": [
+      {
+        "code": "23250-0P010",
+        "qty": 1,
+        "unitCost": 195.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for fuel system rich. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 318.5,
+    "vehicleMileage": 12185,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00015",
+    "dealerId": "DLR-NY-055",
+    "vin": "3TMCZ5AN0L845146",
+    "claimDate": "2025-01-21",
+    "repairCodes": [
+      "B2780"
+    ],
+    "laborHours": 0.9,
+    "parts": [
+      {
+        "code": "69801-0E050",
+        "qty": 1,
+        "unitCost": 110.0
+      }
+    ],
+    "techNotes": "Customer reports power window regulator. Inspected system \u2014 confirmed fault. Replaced defective component. Test drive confirms issue resolved.",
+    "claimAmount": 195.5,
+    "vehicleMileage": 5752,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00016",
+    "dealerId": "DLR-GA-071",
+    "vin": "4T1B11HK0J148932",
+    "claimDate": "2025-02-17",
+    "repairCodes": [
+      "B2780"
+    ],
+    "laborHours": 0.9,
+    "parts": [
+      {
+        "code": "69801-0E050",
+        "qty": 1,
+        "unitCost": 110.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for power window regulator. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 195.5,
+    "vehicleMileage": 13630,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00017",
+    "dealerId": "DLR-NY-055",
+    "vin": "5TDKZ3DC8L430391",
+    "claimDate": "2025-01-11",
+    "repairCodes": [
+      "U0100"
+    ],
+    "laborHours": 2.3,
+    "parts": [
+      {
+        "code": "89661-0E680",
+        "qty": 1,
+        "unitCost": 420.0
+      }
+    ],
+    "techNotes": "Customer reports ECM communication fault. Inspected system \u2014 confirmed fault. Replaced defective component. Test drive confirms issue resolved.",
+    "claimAmount": 638.5,
+    "vehicleMileage": 6276,
+    "warrantyType": "powertrain",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00018",
+    "dealerId": "DLR-WA-018",
+    "vin": "3TMCZ5AN0L782489",
+    "claimDate": "2025-02-24",
+    "repairCodes": [
+      "B2780"
+    ],
+    "laborHours": 0.7,
+    "parts": [
+      {
+        "code": "69801-0E050",
+        "qty": 1,
+        "unitCost": 110.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for power window regulator. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 176.5,
+    "vehicleMileage": 9120,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00019",
+    "dealerId": "DLR-GA-071",
+    "vin": "JTDKARFU0H871331",
+    "claimDate": "2025-02-13",
+    "repairCodes": [
+      "P0420"
+    ],
+    "laborHours": 1.6,
+    "parts": [
+      {
+        "code": "17150-0P030",
+        "qty": 1,
+        "unitCost": 380.0
+      }
+    ],
+    "techNotes": "Customer complaint: catalytic converter. Visual and diagnostic inspection performed. Component replaced within labor guidelines. Vehicle returned to normal operation.",
+    "claimAmount": 532.0,
+    "vehicleMileage": 49019,
+    "warrantyType": "powertrain",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00020",
+    "dealerId": "DLR-NY-055",
+    "vin": "2T1BURHE0J105183",
+    "claimDate": "2025-02-05",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 1.2,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 2,
+        "unitCost": 45.0
+      }
+    ],
+    "techNotes": "Customer reports brake pad replacement. Inspected system \u2014 confirmed fault. Replaced defective component. Test drive confirms issue resolved.",
+    "claimAmount": 204.0,
+    "vehicleMileage": 7326,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00021",
+    "dealerId": "DLR-NY-055",
+    "vin": "2T1BURHE0J763116",
+    "claimDate": "2025-02-15",
+    "repairCodes": [
+      "B2780"
+    ],
+    "laborHours": 0.6,
+    "parts": [
+      {
+        "code": "69801-0E050",
+        "qty": 1,
+        "unitCost": 110.0
+      }
+    ],
+    "techNotes": "Routine warranty inspection identified power window regulator. Replaced affected component. Customer notified and satisfied with repair.",
+    "claimAmount": 167.0,
+    "vehicleMileage": 33913,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00022",
+    "dealerId": "DLR-OH-033",
+    "vin": "4T1BF3EK8A651333",
+    "claimDate": "2025-03-10",
+    "repairCodes": [
+      "P0301"
+    ],
+    "laborHours": 1.8,
+    "parts": [
+      {
+        "code": "90919-01253",
+        "qty": 1,
+        "unitCost": 28.0
+      }
+    ],
+    "techNotes": "Customer reports cylinder 1 misfire. Inspected system \u2014 confirmed fault. Replaced defective component. Test drive confirms issue resolved.",
+    "claimAmount": 199.0,
+    "vehicleMileage": 8550,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00023",
+    "dealerId": "DLR-OH-033",
+    "vin": "5YFBURHE0H178108",
+    "claimDate": "2025-01-02",
+    "repairCodes": [
+      "B2780"
+    ],
+    "laborHours": 0.6,
+    "parts": [
+      {
+        "code": "69801-0E050",
+        "qty": 1,
+        "unitCost": 110.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for power window regulator. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 167.0,
+    "vehicleMileage": 20159,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00024",
+    "dealerId": "DLR-CA-012",
+    "vin": "5YFBURHE0H602606",
+    "claimDate": "2025-02-03",
+    "repairCodes": [
+      "C1201"
+    ],
+    "laborHours": 1.0,
+    "parts": [
+      {
+        "code": "89516-0C010",
+        "qty": 2,
+        "unitCost": 62.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for wheel speed sensor. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 219.0,
+    "vehicleMileage": 20773,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00025",
+    "dealerId": "DLR-OH-033",
+    "vin": "2T1BURHE0J343098",
+    "claimDate": "2025-01-08",
+    "repairCodes": [
+      "B2780"
+    ],
+    "laborHours": 0.8,
+    "parts": [
+      {
+        "code": "69801-0E050",
+        "qty": 1,
+        "unitCost": 110.0
+      }
+    ],
+    "techNotes": "Routine warranty inspection identified power window regulator. Replaced affected component. Customer notified and satisfied with repair.",
+    "claimAmount": 186.0,
+    "vehicleMileage": 52874,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00026",
+    "dealerId": "DLR-TX-047",
+    "vin": "4T1BF3EK8A812191",
+    "claimDate": "2025-03-28",
+    "repairCodes": [
+      "C1336"
+    ],
+    "laborHours": 1.5,
+    "parts": [
+      {
+        "code": "44050-0E040",
+        "qty": 1,
+        "unitCost": 285.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for ABS actuator. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 427.5,
+    "vehicleMileage": 21477,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00027",
+    "dealerId": "DLR-TX-047",
+    "vin": "4T1B11HK0J909169",
+    "claimDate": "2025-03-14",
+    "repairCodes": [
+      "P0420"
+    ],
+    "laborHours": 2.3,
+    "parts": [
+      {
+        "code": "17150-0P030",
+        "qty": 1,
+        "unitCost": 380.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for catalytic converter. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 598.5,
+    "vehicleMileage": 42334,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00028",
+    "dealerId": "DLR-FL-089",
+    "vin": "2T1BURHE0J462475",
+    "claimDate": "2025-01-10",
+    "repairCodes": [
+      "P0172"
+    ],
+    "laborHours": 0.9,
+    "parts": [
+      {
+        "code": "23250-0P010",
+        "qty": 1,
+        "unitCost": 195.0
+      }
+    ],
+    "techNotes": "Customer complaint: fuel system rich. Visual and diagnostic inspection performed. Component replaced within labor guidelines. Vehicle returned to normal operation.",
+    "claimAmount": 280.5,
+    "vehicleMileage": 51936,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00029",
+    "dealerId": "DLR-NY-055",
+    "vin": "4T1B11HK0J384251",
+    "claimDate": "2025-02-01",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 1.9,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 2,
+        "unitCost": 45.0
+      }
+    ],
+    "techNotes": "Customer reports brake pad replacement. Inspected system \u2014 confirmed fault. Replaced defective component. Test drive confirms issue resolved.",
+    "claimAmount": 270.5,
+    "vehicleMileage": 11552,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00030",
+    "dealerId": "DLR-CA-012",
+    "vin": "4T1B11HK0J808412",
+    "claimDate": "2025-02-03",
+    "repairCodes": [
+      "C1336"
+    ],
+    "laborHours": 1.4,
+    "parts": [
+      {
+        "code": "44050-0E040",
+        "qty": 1,
+        "unitCost": 285.0
+      }
+    ],
+    "techNotes": "Customer complaint: ABS actuator. Visual and diagnostic inspection performed. Component replaced within labor guidelines. Vehicle returned to normal operation.",
+    "claimAmount": 418.0,
+    "vehicleMileage": 40600,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00031",
+    "dealerId": "DLR-GA-071",
+    "vin": "4T1B11HK0J353487",
+    "claimDate": "2025-02-02",
+    "repairCodes": [
+      "C1201"
+    ],
+    "laborHours": 1.1,
+    "parts": [
+      {
+        "code": "89516-0C010",
+        "qty": 2,
+        "unitCost": 62.0
+      }
+    ],
+    "techNotes": "Customer complaint: wheel speed sensor. Visual and diagnostic inspection performed. Component replaced within labor guidelines. Vehicle returned to normal operation.",
+    "claimAmount": 228.5,
+    "vehicleMileage": 13924,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00032",
+    "dealerId": "DLR-GA-071",
+    "vin": "4T1BF3EK8A524278",
+    "claimDate": "2025-02-24",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 1.4,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 2,
+        "unitCost": 45.0
+      }
+    ],
+    "techNotes": "Customer reports brake pad replacement. Inspected system \u2014 confirmed fault. Replaced defective component. Test drive confirms issue resolved.",
+    "claimAmount": 223.0,
+    "vehicleMileage": 14066,
+    "warrantyType": "basic",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00033",
+    "dealerId": "DLR-TX-047",
+    "vin": "4T1B11HK0J059826",
+    "claimDate": "2025-01-17",
+    "repairCodes": [
+      "P0172"
+    ],
+    "laborHours": 0.8,
+    "parts": [
+      {
+        "code": "23250-0P010",
+        "qty": 1,
+        "unitCost": 195.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for fuel system rich. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 271.0,
+    "vehicleMileage": 50286,
+    "warrantyType": "powertrain",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00034",
+    "dealerId": "DLR-FL-089",
+    "vin": "2T1BURHE0J315869",
+    "claimDate": "2025-01-20",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 1.8,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 2,
+        "unitCost": 45.0
+      }
+    ],
+    "techNotes": "Customer complaint: brake pad replacement. Visual and diagnostic inspection performed. Component replaced within labor guidelines. Vehicle returned to normal operation.",
+    "claimAmount": 261.0,
+    "vehicleMileage": 7614,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00035",
+    "dealerId": "DLR-WA-018",
+    "vin": "2T1BURHE0J563421",
+    "claimDate": "2025-02-18",
+    "repairCodes": [
+      "P0420"
+    ],
+    "laborHours": 2.2,
+    "parts": [
+      {
+        "code": "17150-0P030",
+        "qty": 1,
+        "unitCost": 380.0
+      }
+    ],
+    "techNotes": "Customer reports catalytic converter. Inspected system \u2014 confirmed fault. Replaced defective component. Test drive confirms issue resolved.",
+    "claimAmount": 589.0,
+    "vehicleMileage": 32020,
+    "warrantyType": "powertrain",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00036",
+    "dealerId": "DLR-CA-012",
+    "vin": "5TDKZ3DC8L330365",
+    "claimDate": "2025-02-05",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 1.2,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 2,
+        "unitCost": 45.0
+      }
+    ],
+    "techNotes": "Customer complaint: brake pad replacement. Visual and diagnostic inspection performed. Component replaced within labor guidelines. Vehicle returned to normal operation.",
+    "claimAmount": 204.0,
+    "vehicleMileage": 35166,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00037",
+    "dealerId": "DLR-FL-089",
+    "vin": "4T1BF3EK8A142940",
+    "claimDate": "2025-01-14",
+    "repairCodes": [
+      "C1201"
+    ],
+    "laborHours": 1.2,
+    "parts": [
+      {
+        "code": "89516-0C010",
+        "qty": 2,
+        "unitCost": 62.0
+      }
+    ],
+    "techNotes": "Customer complaint: wheel speed sensor. Visual and diagnostic inspection performed. Component replaced within labor guidelines. Vehicle returned to normal operation.",
+    "claimAmount": 238.0,
+    "vehicleMileage": 31193,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00038",
+    "dealerId": "DLR-FL-089",
+    "vin": "4T1B11HK0J816934",
+    "claimDate": "2025-01-06",
+    "repairCodes": [
+      "C1241"
+    ],
+    "laborHours": 2.1,
+    "parts": [
+      {
+        "code": "44610-0E020",
+        "qty": 1,
+        "unitCost": 210.0
+      }
+    ],
+    "techNotes": "Routine warranty inspection identified brake booster. Replaced affected component. Customer notified and satisfied with repair.",
+    "claimAmount": 409.5,
+    "vehicleMileage": 25557,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00039",
+    "dealerId": "DLR-NY-055",
+    "vin": "5TDKZ3DC8L615951",
+    "claimDate": "2025-02-08",
+    "repairCodes": [
+      "P0301"
+    ],
+    "laborHours": 1.8,
+    "parts": [
+      {
+        "code": "90919-01253",
+        "qty": 1,
+        "unitCost": 28.0
+      }
+    ],
+    "techNotes": "Warning light illuminated for cylinder 1 misfire. Diagnosed fault code. Replaced part per Toyota service bulletin. Cleared codes \u2014 no recurrence.",
+    "claimAmount": 199.0,
+    "vehicleMileage": 40287,
+    "warrantyType": "powertrain",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00040",
+    "dealerId": "DLR-GA-071",
+    "vin": "4T1B11HK0J236629",
+    "claimDate": "2025-03-14",
+    "repairCodes": [
+      "P0172"
+    ],
+    "laborHours": 1.0,
+    "parts": [
+      {
+        "code": "23250-0P010",
+        "qty": 1,
+        "unitCost": 195.0
+      }
+    ],
+    "techNotes": "Customer complaint: fuel system rich. Visual and diagnostic inspection performed. Component replaced within labor guidelines. Vehicle returned to normal operation.",
+    "claimAmount": 290.0,
+    "vehicleMileage": 31371,
+    "warrantyType": "extended",
+    "groundTruth": "clean",
+    "violationHint": null
+  },
+  {
+    "claimId": "CLM-00041",
+    "dealerId": "DLR-OH-033",
+    "vin": "4T1B11HK0J044369",
+    "claimDate": "2025-03-19",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 6.5,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 2,
+        "unitCost": 45.0
+      }
+    ],
+    "techNotes": "brake pad replacement fault detected. Replaced primary and secondary components to prevent future failure. Additional labor for system calibration.",
+    "claimAmount": 707.5,
+    "vehicleMileage": 22000,
+    "warrantyType": "basic",
+    "groundTruth": "violation",
+    "violationHint": "Labor hours 6.5 exceed policy limit of 2.0hr for brake pad replacement (B2799)."
+  },
+  {
+    "claimId": "CLM-00042",
+    "dealerId": "DLR-OH-033",
+    "vin": "JTDKARFU0H738721",
+    "claimDate": "2025-02-06",
+    "repairCodes": [
+      "C1201"
+    ],
+    "laborHours": 1.2,
+    "parts": [
+      {
+        "code": "89516-0C010",
+        "qty": 2,
+        "unitCost": 62.0
+      }
+    ],
+    "techNotes": "wheel speed sensor fault detected. Replaced primary and secondary components to prevent future failure. Additional labor for system calibration.",
+    "claimAmount": 238.0,
+    "vehicleMileage": 58000,
+    "warrantyType": "basic",
+    "groundTruth": "violation",
+    "violationHint": "Vehicle mileage 58,000 exceeds basic warranty 36,000 mile limit."
+  },
+  {
+    "claimId": "CLM-00043",
+    "dealerId": "DLR-TX-047",
+    "vin": "5YFBURHE0H343320",
+    "claimDate": "2025-01-06",
+    "repairCodes": [
+      "U0100"
+    ],
+    "laborHours": 2.0,
+    "parts": [
+      {
+        "code": "89661-0E680",
+        "qty": 1,
+        "unitCost": 420.0
+      }
+    ],
+    "techNotes": "ECM communication fault fault detected. Replaced primary and secondary components to prevent future failure. Additional labor for system calibration.",
+    "claimAmount": 610.0,
+    "vehicleMileage": 30000,
+    "warrantyType": "basic",
+    "groundTruth": "violation",
+    "violationHint": "Repair code U0100 (ECM) not covered under basic warranty \u2014 requires powertrain or extended."
+  },
+  {
+    "claimId": "CLM-00044",
+    "dealerId": "DLR-OH-033",
+    "vin": "4T1B11HK0J176936",
+    "claimDate": "2025-03-05",
+    "repairCodes": [
+      "P0420"
+    ],
+    "laborHours": 5.5,
+    "parts": [
+      {
+        "code": "17150-0P030",
+        "qty": 1,
+        "unitCost": 380.0
+      }
+    ],
+    "techNotes": "Customer reports catalytic converter. Performed extensive inspection across multiple systems. Replaced component plus related assemblies as preventative measure.",
+    "claimAmount": 902.5,
+    "vehicleMileage": 44000,
+    "warrantyType": "powertrain",
+    "groundTruth": "violation",
+    "violationHint": "Labor hours 5.5 exceed policy limit of 2.5hr for catalytic converter replacement (P0420)."
+  },
+  {
+    "claimId": "CLM-00045",
+    "dealerId": "DLR-CA-012",
+    "vin": "2T1BURHE0J016328",
+    "claimDate": "2025-03-01",
+    "repairCodes": [
+      "B1420"
+    ],
+    "laborHours": 1.2,
+    "parts": [
+      {
+        "code": "87103-0E050",
+        "qty": 1,
+        "unitCost": 95.0
+      }
+    ],
+    "techNotes": "HVAC blower motor fault detected. Replaced primary and secondary components to prevent future failure. Additional labor for system calibration.",
+    "claimAmount": 209.0,
+    "vehicleMileage": 18000,
+    "warrantyType": "powertrain",
+    "groundTruth": "violation",
+    "violationHint": "Repair code B1420 (HVAC blower) is not covered under powertrain warranty."
+  },
+  {
+    "claimId": "CLM-00046",
+    "dealerId": "DLR-NY-055",
+    "vin": "2T1BURHE0J172788",
+    "claimDate": "2025-03-18",
+    "repairCodes": [
+      "P0301"
+    ],
+    "laborHours": 1.8,
+    "parts": [
+      {
+        "code": "90919-01253",
+        "qty": 1,
+        "unitCost": 28.0
+      }
+    ],
+    "techNotes": "Customer reports cylinder 1 misfire. Performed extensive inspection across multiple systems. Replaced component plus related assemblies as preventative measure.",
+    "claimAmount": 199.0,
+    "vehicleMileage": 41000,
+    "warrantyType": "basic",
+    "groundTruth": "violation",
+    "violationHint": "Mileage 41,000 exceeds basic warranty limit. P0301 also requires powertrain coverage."
+  },
+  {
+    "claimId": "CLM-00047",
+    "dealerId": "DLR-WA-018",
+    "vin": "JTDKARFU0H986872",
+    "claimDate": "2025-03-02",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 7.0,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 2,
+        "unitCost": 45.0
+      }
+    ],
+    "techNotes": "brake pad replacement fault detected. Replaced primary and secondary components to prevent future failure. Additional labor for system calibration.",
+    "claimAmount": 755.0,
+    "vehicleMileage": 19500,
+    "warrantyType": "basic",
+    "groundTruth": "violation",
+    "violationHint": "Labor hours 7.0 are 3.5x over the 2.0hr limit for B2799. Amount inconsistent with parts submitted."
+  },
+  {
+    "claimId": "CLM-00048",
+    "dealerId": "DLR-FL-089",
+    "vin": "5YFBURHE0H348734",
+    "claimDate": "2025-02-26",
+    "repairCodes": [
+      "B2780"
+    ],
+    "laborHours": 3.5,
+    "parts": [
+      {
+        "code": "69801-0E050",
+        "qty": 1,
+        "unitCost": 110.0
+      }
+    ],
+    "techNotes": "power window regulator fault detected. Replaced primary and secondary components to prevent future failure. Additional labor for system calibration.",
+    "claimAmount": 442.5,
+    "vehicleMileage": 25000,
+    "warrantyType": "basic",
+    "groundTruth": "violation",
+    "violationHint": "Labor hours 3.5 exceed 1.0hr policy limit for power window regulator (B2780)."
+  },
+  {
+    "claimId": "CLM-00049",
+    "dealerId": "DLR-GA-071",
+    "vin": "5TDKZ3DC8L345581",
+    "claimDate": "2025-01-18",
+    "repairCodes": [
+      "P0172"
+    ],
+    "laborHours": 1.4,
+    "parts": [
+      {
+        "code": "23250-0P010",
+        "qty": 1,
+        "unitCost": 195.0
+      }
+    ],
+    "techNotes": "Customer reports fuel system rich. Performed extensive inspection across multiple systems. Replaced component plus related assemblies as preventative measure.",
+    "claimAmount": 328.0,
+    "vehicleMileage": 29000,
+    "warrantyType": "basic",
+    "groundTruth": "violation",
+    "violationHint": "Fuel system repair P0172 not covered under basic warranty \u2014 powertrain or extended required."
+  },
+  {
+    "claimId": "CLM-00050",
+    "dealerId": "DLR-CA-012",
+    "vin": "JTDKARFU0H231665",
+    "claimDate": "2025-03-11",
+    "repairCodes": [
+      "C1241"
+    ],
+    "laborHours": 5.0,
+    "parts": [
+      {
+        "code": "44610-0E020",
+        "qty": 1,
+        "unitCost": 210.0
+      }
+    ],
+    "techNotes": "Customer reports brake booster. Performed extensive inspection across multiple systems. Replaced component plus related assemblies as preventative measure.",
+    "claimAmount": 685.0,
+    "vehicleMileage": 31000,
+    "warrantyType": "basic",
+    "groundTruth": "violation",
+    "violationHint": "Labor hours 5.0 exceed 2.5hr limit for brake booster replacement (C1241)."
+  },
+  {
+    "claimId": "CLM-00051",
+    "dealerId": "DLR-TX-047",
+    "vin": "4T1BF3EK8A366909",
+    "claimDate": "2025-02-18",
+    "repairCodes": [
+      "B2799"
+    ],
+    "laborHours": 1.8,
+    "parts": [
+      {
+        "code": "04465-02220",
+        "qty": 1,
+        "unitCost": 45.0
+      }
+    ],
+    "techNotes": "Customer reports brake pad replacement. Inspected and replaced front component. Test drive confirmed noise resolved.",
+    "claimAmount": 216.0,
+    "vehicleMileage": 35267,
+    "warrantyType": "basic",
+    "groundTruth": "anomaly",
+    "violationHint": "DLR-TX-047 submitted 5 identical B2799 claims on consecutive days \u2014 same labor, same amount, different VINs. Statistically improbable pattern."
+  },
+  {
+    "claimId": "CLM-00052",
+    "dealerId": "DLR-CA-012",
+    "vin": "5TDKZ3DC8L466889",
+    "claimDate": "2025-01-29",
+    "repairCodes": [
+      "P0420"
+    ],
+    "laborHours": 2.2,
+    "parts": [
+      {
+        "code": "17150-0P030",
+        "qty": 1,
+        "unitCost": 380.0
+      }
+    ],
+    "techNotes": "Customer reports catalytic converter. Inspected and replaced front component. Test drive confirmed noise resolved.",
+    "claimAmount": 589.0,
+    "vehicleMileage": 3200,
+    "warrantyType": "powertrain",
+    "groundTruth": "anomaly",
+    "violationHint": "Catalytic converter replacement (P0420) claimed at 3,200 miles \u2014 implausibly early for this failure type."
+  },
+  {
+    "claimId": "CLM-00053",
+    "dealerId": "DLR-NY-055",
+    "vin": "5TDKZ3DC8L670656",
+    "claimDate": "2025-01-22",
+    "repairCodes": [
+      "U0100"
+    ],
+    "laborHours": 3.1,
+    "parts": [
+      {
+        "code": "89661-0E680",
+        "qty": 1,
+        "unitCost": 420.0
+      }
+    ],
+    "techNotes": "Customer reports ECM communication fault. Inspected and replaced front component. Test drive confirmed noise resolved.",
+    "claimAmount": 2000.6,
+    "vehicleMileage": 35998,
+    "warrantyType": "powertrain",
+    "groundTruth": "anomaly",
+    "violationHint": "Claim amount $1,940 is 2.8x the expected cost for ECM replacement. Parts pricing inconsistent with Toyota MSRP."
+  },
+  {
+    "claimId": "CLM-00054",
+    "dealerId": "DLR-FL-089",
+    "vin": "4T1B11HK0J806990",
+    "claimDate": "2025-01-11",
+    "repairCodes": [
+      "C1201"
+    ],
+    "laborHours": 1.4,
+    "parts": [
+      {
+        "code": "89516-0C010",
+        "qty": 8,
+        "unitCost": 62.0
+      }
+    ],
+    "techNotes": "Customer reports wheel speed sensor. Inspected and replaced front component. Test drive confirmed noise resolved.",
+    "claimAmount": 629.0,
+    "vehicleMileage": 35315,
+    "warrantyType": "basic",
+    "groundTruth": "anomaly",
+    "violationHint": "8 wheel speed sensors claimed on a single vehicle \u2014 a vehicle only has 4. Quantity is physically impossible."
+  },
+  {
+    "claimId": "CLM-00055",
+    "dealerId": "DLR-GA-071",
+    "vin": "5YFBURHE0H720465",
+    "claimDate": "2025-01-28",
+    "repairCodes": [
+      "P0301"
+    ],
+    "laborHours": 1.8,
+    "parts": [
+      {
+        "code": "90919-01253",
+        "qty": 1,
+        "unitCost": 28.0
+      }
+    ],
+    "techNotes": "Customer reports cylinder 1 misfire. Inspected and replaced front component. Test drive confirmed noise resolved.",
+    "claimAmount": 199.0,
+    "vehicleMileage": 31000,
+    "warrantyType": "powertrain",
+    "groundTruth": "anomaly",
+    "violationHint": "Same VIN appeared in a clean claim 30 days ago at 44,200 miles \u2014 this claim reports 31,000 miles. Mileage regression is impossible."
+  }
+]

@@ -1,0 +1,110 @@
+[
+  {
+    "ruleId": "R-01",
+    "description": "Labor hour limit — brake pad replacement",
+    "field": "laborHours",
+    "repairCode": "B2799",
+    "condition": "laborHours <= maxHours",
+    "maxHours": 2.0,
+    "violationSeverity": "high",
+    "message": "Labor hours for brake pad replacement (B2799) must not exceed 2.0 hrs.",
+    "exampleViolation": "Claim submits 6.5 labor hours for a brake pad swap — policy cap is 2.0 hrs."
+  },
+  {
+    "ruleId": "R-02",
+    "description": "Labor hour limit — wheel speed sensor",
+    "field": "laborHours",
+    "repairCode": "C1201",
+    "condition": "laborHours <= maxHours",
+    "maxHours": 1.5,
+    "violationSeverity": "high",
+    "message": "Labor hours for wheel speed sensor replacement (C1201) must not exceed 1.5 hrs.",
+    "exampleViolation": "Claim submits 4.0 labor hours for a single sensor replacement."
+  },
+  {
+    "ruleId": "R-03",
+    "description": "Labor hour limit — catalytic converter",
+    "field": "laborHours",
+    "repairCode": "P0420",
+    "condition": "laborHours <= maxHours",
+    "maxHours": 2.5,
+    "violationSeverity": "high",
+    "message": "Labor hours for catalytic converter replacement (P0420) must not exceed 2.5 hrs.",
+    "exampleViolation": "Claim submits 5.5 labor hours for catalytic converter work."
+  },
+  {
+    "ruleId": "R-04",
+    "description": "Labor hour limit — power window regulator",
+    "field": "laborHours",
+    "repairCode": "B2780",
+    "condition": "laborHours <= maxHours",
+    "maxHours": 1.0,
+    "violationSeverity": "medium",
+    "message": "Labor hours for power window regulator (B2780) must not exceed 1.0 hr.",
+    "exampleViolation": "Claim submits 3.5 labor hours for a window regulator replacement."
+  },
+  {
+    "ruleId": "R-05",
+    "description": "Labor hour limit — brake booster",
+    "field": "laborHours",
+    "repairCode": "C1241",
+    "condition": "laborHours <= maxHours",
+    "maxHours": 2.5,
+    "violationSeverity": "high",
+    "message": "Labor hours for brake booster replacement (C1241) must not exceed 2.5 hrs.",
+    "exampleViolation": "Claim submits 5.0 labor hours for brake booster work."
+  },
+  {
+    "ruleId": "R-06",
+    "description": "Basic warranty mileage limit",
+    "field": "vehicleMileage",
+    "warrantyType": "basic",
+    "condition": "vehicleMileage <= 36000",
+    "maxMileage": 36000,
+    "violationSeverity": "high",
+    "message": "Basic warranty claims are only eligible for vehicles under 36,000 miles.",
+    "exampleViolation": "Claim submitted for a vehicle at 58,000 miles under basic warranty."
+  },
+  {
+    "ruleId": "R-07",
+    "description": "Powertrain warranty mileage limit",
+    "field": "vehicleMileage",
+    "warrantyType": "powertrain",
+    "condition": "vehicleMileage <= 60000",
+    "maxMileage": 60000,
+    "violationSeverity": "high",
+    "message": "Powertrain warranty claims are only eligible for vehicles under 60,000 miles.",
+    "exampleViolation": "Claim submitted for a vehicle at 68,000 miles under powertrain warranty."
+  },
+  {
+    "ruleId": "R-08",
+    "description": "Repair code coverage — basic warranty exclusions",
+    "field": "repairCodes",
+    "condition": "repairCode not in basicExclusions",
+    "basicExclusions": ["U0100","P0420","P0301","P0172"],
+    "violationSeverity": "high",
+    "message": "Repair codes U0100, P0420, P0301, P0172 are not covered under basic warranty — powertrain or extended required.",
+    "exampleViolation": "ECM replacement (U0100) submitted under basic warranty."
+  },
+  {
+    "ruleId": "R-09",
+    "description": "Repair code coverage — powertrain warranty exclusions",
+    "field": "repairCodes",
+    "condition": "repairCode not in powertrainExclusions",
+    "powertrainExclusions": ["B1420","B2780","B2799","C1201","C1241","C1336"],
+    "violationSeverity": "medium",
+    "message": "Repair codes B1420, B2780, B2799, C1201, C1241, C1336 are not covered under powertrain warranty — basic or extended required.",
+    "exampleViolation": "HVAC blower motor (B1420) submitted under powertrain warranty."
+  },
+  {
+    "ruleId": "R-10",
+    "description": "Diagnostic evidence required before major component replacement",
+    "field": "techNotes",
+    "repairCodes": ["U0100","89661-0E680"],
+    "condition": "techNotes must not contain phrases indicating unverified diagnosis before ECM replacement",
+    "flagPhrases": ["unable to verify","could not confirm root cause","replaced as precaution","preventative replacement","root cause not confirmed"],
+    "violationSeverity": "medium",
+    "message": "ECM or major powertrain component replacement requires documented, verified root cause in technician notes.",
+    "exampleViolation": "Tech notes state 'unable to fully verify root cause prior to replacement' — ECM replaced without confirmed diagnosis."
+  }
+]
