@@ -8,54 +8,63 @@ export default function ClaimRow({ claim, status, decision, contestStatus, isLoa
     `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
   const statusBadge = {
-    Clean: 'bg-blue-100 text-blue-800',
-    Flagged: 'bg-red-100 text-red-800',
-    Anomaly: 'bg-amber-100 text-amber-800',
-    Contested: 'bg-orange-100 text-orange-800',
+    Clean: 'bg-status-clean-tint text-status-clean border-status-clean-border',
+    Flagged: 'bg-status-flagged-tint text-status-flagged border-status-flagged-border',
+    Anomaly: 'bg-status-anomaly-tint text-status-anomaly border-status-anomaly-border',
+    Contested: 'bg-orange-100 text-orange-700 border-orange-200',
   }
 
   const decisionBadge = {
-    approve: 'bg-green-100 text-green-800',
-    reject: 'bg-red-100 text-red-800',
-    escalate: 'bg-amber-100 text-amber-800',
+    approve: 'bg-status-clean-tint text-status-clean border-status-clean-border',
+    reject: 'bg-status-flagged-tint text-status-flagged border-status-flagged-border',
+    escalate: 'bg-status-anomaly-tint text-status-anomaly border-status-anomaly-border',
   }
 
   const warrantyBadge = {
-    basic: 'bg-gray-100 text-gray-700',
-    powertrain: 'bg-purple-100 text-purple-700',
-    extended: 'bg-indigo-100 text-indigo-700',
+    basic: 'bg-toyota-100 text-toyota-600 border-toyota-200',
+    powertrain: 'bg-toyota-ink text-white border-toyota-ink',
+    extended: 'bg-white text-toyota-ink border-toyota-ink',
   }
 
   return (
-    <tr className="border-t border-gray-100 hover:bg-gray-50 group cursor-pointer" onClick={onSelect}>
-      <td className="px-4 py-3 font-mono text-sm font-medium text-blue-700">{claim.claimId}</td>
-      <td className="px-4 py-3 text-gray-600">{formatDate(claim.claimDate)}</td>
-      <td className="px-4 py-3 text-gray-600">{claim.dealerId}</td>
+    <tr
+      className="border-t border-toyota-100 hover:bg-toyota-50 group cursor-pointer transition-colors"
+      onClick={onSelect}
+    >
+      <td className="px-4 py-3 font-mono text-sm font-semibold text-toyota-red">{claim.claimId}</td>
+      <td className="px-4 py-3 text-toyota-600 tabular-nums">{formatDate(claim.claimDate)}</td>
+      <td className="px-4 py-3 text-toyota-600">{claim.dealerId}</td>
       <td className="px-4 py-3">
-        <span className="bg-gray-100 text-gray-700 text-xs font-medium px-2 py-0.5 rounded">
+        <span className="font-mono bg-toyota-100 text-toyota-700 text-xs font-medium px-2 py-0.5 rounded border border-toyota-200">
           {claim.repairCodes[0]}
         </span>
         {claim.repairCodes.length > 1 && (
-          <span className="ml-1 text-xs text-gray-400">+{claim.repairCodes.length - 1}</span>
+          <span className="ml-1.5 text-xs text-toyota-400">+{claim.repairCodes.length - 1}</span>
         )}
       </td>
-      <td className="px-4 py-3 text-right font-medium">{formatCurrency(claim.claimAmount)}</td>
+      <td className="px-4 py-3 text-right font-semibold tabular-nums text-toyota-ink">
+        {formatCurrency(claim.claimAmount)}
+      </td>
       <td className="px-4 py-3">
-        <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${warrantyBadge[claim.warrantyType] || 'bg-gray-100 text-gray-700'}`}>
+        <span
+          className={`inline-block text-[11px] font-medium px-2.5 py-0.5 rounded-sm border capitalize ${
+            warrantyBadge[claim.warrantyType] || 'bg-toyota-100 text-toyota-700 border-toyota-200'
+          }`}
+        >
           {claim.warrantyType}
         </span>
       </td>
       <td className="px-4 py-3">
         {isLoading ? (
-          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500 animate-pulse">
+          <span className="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-toyota-50 text-toyota-400 border-toyota-200 animate-pulse">
             Analysing…
           </span>
         ) : decision ? (
-          <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full capitalize ${decisionBadge[decision]}`}>
+          <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border ${decisionBadge[decision]}`}>
             {decision}
           </span>
         ) : (
-          <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusBadge[status]}`}>
+          <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border ${statusBadge[status]}`}>
             {status}
           </span>
         )}
@@ -71,16 +80,18 @@ export default function ClaimRow({ claim, status, decision, contestStatus, isLoa
       </td>
       <td className="px-4 py-3">
         {!decision && (
-          <div className="opacity-0 group-hover:opacity-100 flex gap-1">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1.5">
             <button
               onClick={e => { e.stopPropagation(); onDecision(claim.claimId, 'approve') }}
-              className="text-xs px-2 py-1 rounded bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
+              title="Approve"
+              className="text-xs w-7 h-7 rounded-md border border-status-clean-border bg-white text-status-clean hover:bg-status-clean-tint flex items-center justify-center font-semibold"
             >
               ✓
             </button>
             <button
               onClick={e => { e.stopPropagation(); onDecision(claim.claimId, 'reject') }}
-              className="text-xs px-2 py-1 rounded bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+              title="Reject"
+              className="text-xs w-7 h-7 rounded-md border border-toyota-red-border bg-white text-toyota-red hover:bg-toyota-red-tint flex items-center justify-center font-semibold"
             >
               ✗
             </button>

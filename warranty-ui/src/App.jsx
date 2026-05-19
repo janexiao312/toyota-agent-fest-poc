@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react'
-import SavingsCounter from './components/SavingsCounter'
+import LoginScreen from './components/LoginScreen'
+import NavBar from './components/NavBar'
+import MetricsStrip from './components/MetricsStrip'
 import ClaimQueue from './components/ClaimQueue'
 import ClaimDetail from './components/ClaimDetail'
+import ProfileManager from './components/ProfileManager'
+import ManagerDashboard from './components/ManagerDashboard'
+import InvestigatorView from './components/InvestigatorView'
+import ReportsView from './components/ReportsView'
+import RulesView from './components/RulesView'
+import CommandPalette from './components/CommandPalette'
+import { useNotifications } from './components/NotificationsPopover'
 import CustomerPortal from './components/CustomerPortal'
 import SpecialistWorkspace from './components/SpecialistWorkspace'
 import { useAgents } from './useAgents'
@@ -9,17 +18,34 @@ import claimsData from '../claims.json'
 import rulesData from '../rules.json'
 
 function App() {
+  const [authed, setAuthed] = useState(false)
+  const [view, setView] = useState('queue')
+  const [role, setRole] = useState('reviewer')
   const [claims, setClaims] = useState([])
   const [activeClaimId, setActiveClaimId] = useState(null)
+  const [activeDealerId, setActiveDealerId] = useState(null)
   const [decisions, setDecisions] = useState({})
-  const [activeView, setActiveView] = useState('reviewer')
+  const [cmdkOpen, setCmdkOpen] = useState(false)
   const [contestData, setContestData] = useState({})
 
-  const { agentResults, isLoading, runAgents } = useAgents(claims, rulesData)
+  const notifications = useNotifications()
+  const { agentResults, runAgents } = useAgents(claims, rulesData)
 
   useEffect(() => {
     setClaims(claimsData)
   }, [])
+
+  useEffect(() => {
+    if (!authed) return
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setCmdkOpen(o => !o)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [authed])
 
   const activeClaim = claims.find(c => c.claimId === activeClaimId)
 
@@ -75,57 +101,62 @@ function App() {
     }))
   }
 
+  const handleNavigate = (target) => {
+    setActiveClaimId(null)
+    setActiveDealerId(null)
+    setView(target)
+  }
+
+  const handleSignOut = () => {
+    setAuthed(false)
+    setActiveClaimId(null)
+    setActiveDealerId(null)
+    setView('queue')
+  }
+
+  const handleChangeRole = (newRole) => {
+    setRole(newRole)
+    setActiveClaimId(null)
+    setActiveDealerId(null)
+    setView('queue')
+  }
+
+  const handleJumpToDealer = (dealerId) => {
+    setRole('investigator')
+    setView('queue')
+    setActiveClaimId(null)
+    setActiveDealerId(dealerId)
+  }
+
+  if (!authed) {
+    return <LoginScreen onSignIn={() => setAuthed(true)} />
+  }
+
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {/* Demo view toggle header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-2 flex items-center gap-4">
-        <span className="text-sm font-semibold text-gray-800">Toyota Warranty Claims Engine</span>
-        <span className="text-xs text-gray-400 mr-auto">POC Demo</span>
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
-          {['reviewer', 'customer', 'specialist'].map(view => (
-            <button
-              key={view}
-              onClick={() => setActiveView(view)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-all ${
-                activeView === view
-                  ? 'bg-white text-gray-800 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {view === 'reviewer' ? 'Reviewer' : view === 'customer' ? 'Customer View' : 'Specialist View'}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="bg-toyota-50 min-h-screen text-toyota-ink">
+      <NavBar
+        currentView={view}
+        onNavigate={handleNavigate}
+        role={role}
+        onChangeRole={handleChangeRole}
+        onSignOut={handleSignOut}
+        notifications={notifications}
+        onSelectClaim={handleSelectClaim}
+        onOpenCmdk={() => setCmdkOpen(true)}
+      />
 
-      {/* Reviewer view */}
-      {activeView === 'reviewer' && (
-        <>
-          <SavingsCounter claims={claims} decisions={decisions} />
-          {activeClaimId && activeClaim ? (
-            <ClaimDetail
-              claim={activeClaim}
-              rules={rulesData}
-              agentResults={agentResults[activeClaimId]}
-              onDecision={handleDecision}
-              onBack={() => setActiveClaimId(null)}
-            />
-          ) : (
-            <ClaimQueue
-              claims={claims}
-              decisions={decisions}
-              agentResults={agentResults}
-              contestData={contestData}
-              isLoading={isLoading}
-              onSelectClaim={handleSelectClaim}
-              onDecision={handleDecision}
-            />
-          )}
-        </>
-      )}
-
-      {/* Customer view */}
-      {activeView === 'customer' && (
+      {view === 'settings' ? (
+        <ProfileManager
+          role={role}
+          onChangeRole={handleChangeRole}
+          onBack={() => setView('queue')}
+          onSignOut={handleSignOut}
+        />
+      ) : view === 'reports' ? (
+        <ReportsView claims={claims} rules={rulesData} agentResults={agentResults} decisions={decisions} />
+      ) : view === 'rules' ? (
+        <RulesView claims={claims} rules={rulesData} role={role} />
+      ) : view === 'customer' ? (
         <CustomerPortal
           claims={claims}
           decisions={decisions}
@@ -134,10 +165,7 @@ function App() {
           onContestSubmit={handleContestSubmit}
           rules={rulesData}
         />
-      )}
-
-      {/* Specialist view */}
-      {activeView === 'specialist' && (
+      ) : view === 'specialist' ? (
         <SpecialistWorkspace
           claims={claims}
           decisions={decisions}
@@ -146,8 +174,91 @@ function App() {
           rules={rulesData}
           onResolve={handleResolve}
         />
+      ) : activeClaim ? (
+        <ClaimDetail
+          claim={activeClaim}
+          rules={rulesData}
+          agentResults={agentResults[activeClaimId]}
+          onDecision={handleDecision}
+          onBack={() => setActiveClaimId(null)}
+        />
+      ) : role === 'manager' ? (
+        <ManagerDashboard
+          claims={claims}
+          decisions={decisions}
+          agentResults={agentResults}
+          onSelectClaim={handleSelectClaim}
+        />
+      ) : role === 'investigator' ? (
+        <InvestigatorView
+          claims={claims}
+          agentResults={agentResults}
+          onSelectClaim={handleSelectClaim}
+          activeDealerId={activeDealerId}
+          onOpenDealer={setActiveDealerId}
+          onCloseDealer={() => setActiveDealerId(null)}
+        />
+      ) : (
+        <ReviewerHome
+          claims={claims}
+          decisions={decisions}
+          agentResults={agentResults}
+          contestData={contestData}
+          onSelectClaim={handleSelectClaim}
+          onDecision={handleDecision}
+        />
       )}
+
+      <CommandPalette
+        open={cmdkOpen}
+        claims={claims}
+        onClose={() => setCmdkOpen(false)}
+        onSelectClaim={handleSelectClaim}
+        onNavigate={handleNavigate}
+        onJumpToDealer={handleJumpToDealer}
+      />
     </div>
+  )
+}
+
+function ReviewerHome({ claims, decisions, agentResults, contestData, onSelectClaim, onDecision }) {
+  const reviewed = Object.values(decisions).filter(Boolean).length
+  const rejectedFlagged = claims.filter(
+    c => decisions[c.claimId] === 'reject' && (c.groundTruth === 'violation' || c.groundTruth === 'anomaly')
+  )
+  const flagsCaught = rejectedFlagged.length
+  const leakagePrevented = rejectedFlagged.reduce((sum, c) => sum + c.claimAmount, 0)
+  const totalFlaggedProcessed = claims.filter(
+    c => decisions[c.claimId] && (c.groundTruth === 'violation' || c.groundTruth === 'anomaly')
+  ).length
+  const accuracy = totalFlaggedProcessed > 0
+    ? Math.round((flagsCaught / totalFlaggedProcessed) * 100)
+    : 0
+
+  return (
+    <>
+      <MetricsStrip
+        contextLabel="My day · Dallas RO"
+        metrics={[
+          { label: 'Claims Reviewed', value: reviewed },
+          { label: 'Flags Caught', value: flagsCaught },
+          {
+            label: 'Leakage Prevented',
+            value: `$${leakagePrevented.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+            accent: true,
+          },
+          { label: 'Accuracy', value: `${accuracy}%` },
+        ]}
+      />
+      <ClaimQueue
+        claims={claims}
+        decisions={decisions}
+        agentResults={agentResults}
+        contestData={contestData}
+        onSelectClaim={onSelectClaim}
+        onDecision={onDecision}
+      />
+    </>
   )
 }
 

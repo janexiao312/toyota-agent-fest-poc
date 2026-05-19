@@ -5,50 +5,50 @@ export default function MetadataPanel({ claim }) {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
-      <div className="flex justify-between items-start">
-        <div>
-          <div className="flex gap-2 mb-3">
+    <div className="bg-white border border-toyota-200 rounded-lg p-6 mb-4">
+      <div className="flex justify-between items-start gap-8">
+        <div className="flex-1">
+          <div className="flex gap-1.5 mb-4">
             {claim.repairCodes.map(code => (
-              <span key={code} className="bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-0.5 rounded">
+              <span
+                key={code}
+                className="font-mono bg-toyota-100 text-toyota-700 text-xs font-medium px-2 py-0.5 rounded border border-toyota-200"
+              >
                 {code}
               </span>
             ))}
           </div>
-          <div className="grid grid-cols-3 gap-x-8 gap-y-2 text-sm">
-            <div>
-              <span className="text-gray-500">Claim ID</span>
-              <p className="font-mono font-medium">{claim.claimId}</p>
-            </div>
-            <div>
-              <span className="text-gray-500">Dealer</span>
-              <p className="font-medium">{claim.dealerId}</p>
-            </div>
-            <div>
-              <span className="text-gray-500">VIN</span>
-              <p className="font-mono text-xs">{claim.vin}</p>
-            </div>
-            <div>
-              <span className="text-gray-500">Date</span>
-              <p className="font-medium">{formatDate(claim.claimDate)}</p>
-            </div>
-            <div>
-              <span className="text-gray-500">Mileage</span>
-              <p className="font-medium">{claim.vehicleMileage.toLocaleString()} mi</p>
-            </div>
-            <div>
-              <span className="text-gray-500">Warranty</span>
-              <p className="font-medium capitalize">{claim.warrantyType}</p>
-            </div>
+          <div className="grid grid-cols-3 gap-x-10 gap-y-4 text-sm">
+            <Field label="Claim ID" value={claim.claimId} mono />
+            <Field label="Dealer" value={claim.dealerId} />
+            <Field label="VIN" value={claim.vin} mono small />
+            <Field label="Date" value={formatDate(claim.claimDate)} />
+            <Field label="Mileage" value={`${claim.vehicleMileage.toLocaleString()} mi`} />
+            <Field label="Warranty" value={claim.warrantyType} capitalize />
           </div>
         </div>
-        <div className="text-right">
-          <span className="text-gray-500 text-sm">Claim Amount</span>
-          <p className="text-2xl font-bold text-gray-800">
+        <div className="text-right border-l border-toyota-200 pl-8">
+          <span className="text-[11px] uppercase tracking-wider text-toyota-500 font-medium">
+            Claim Amount
+          </span>
+          <p className="text-3xl font-bold text-toyota-ink tabular-nums mt-1">
             ${claim.claimAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </p>
         </div>
       </div>
+    </div>
+  )
+}
+
+function Field({ label, value, mono = false, small = false, capitalize = false }) {
+  return (
+    <div>
+      <span className="text-[11px] uppercase tracking-wider text-toyota-500 font-medium">{label}</span>
+      <p
+        className={`mt-0.5 font-medium text-toyota-ink ${mono ? 'font-mono' : ''} ${small ? 'text-xs' : ''} ${capitalize ? 'capitalize' : ''}`}
+      >
+        {value}
+      </p>
     </div>
   )
 }

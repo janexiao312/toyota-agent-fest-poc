@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Toyota Warranty Reviewer — Design System</title>
+
+  <!--
+    Standalone design-system reference for the Warranty Reviewer POC.
+
+    HOW TO TWEAK:
+      1. Open this file directly in a browser (no server needed).
+      2. Edit the tokens in the @theme block below — colors, fonts, radii.
+      3. Refresh. Every component on the page picks up the new value.
+      4. When happy, mirror the @theme block into warranty-ui/src/index.css.
+  -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* Brand */
+      --color-toyota-red: #EB0A1E;
+      --color-toyota-red-hover: #C8081A;
+      --color-toyota-red-active: #A30714;
+      --color-toyota-red-tint: #FCE6E8;
+      --color-toyota-red-border: #F5B8BE;
+
+      /* Ink ladder */
+      --color-toyota-ink: #1A1A1A;
+      --color-toyota-graphite: #58595B;
+      --color-toyota-50:  #FAFAFA;
+      --color-toyota-100: #F4F4F5;
+      --color-toyota-200: #E5E5E7;
+      --color-toyota-300: #D1D1D3;
+      --color-toyota-400: #9C9C9F;
+      --color-toyota-500: #6B6B6E;
+      --color-toyota-600: #4A4A4C;
+      --color-toyota-700: #2C2C2E;
+      --color-toyota-800: #1A1A1A;
+
+      /* Semantic */
+      --color-status-clean: #166534;
+      --color-status-clean-tint: #DCFCE7;
+      --color-status-clean-border: #BBF7D0;
+
+      --color-status-flagged: #EB0A1E;
+      --color-status-flagged-tint: #FCE6E8;
+      --color-status-flagged-border: #F5B8BE;
+
+      --color-status-anomaly: #B45309;
+      --color-status-anomaly-tint: #FEF3C7;
+      --color-status-anomaly-border: #FDE68A;
+
+      /* Type */
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+      /* Radii */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 10px;
+      --radius-xl: 12px;
+    }
+
+    @layer base {
+      html, body {
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        color: var(--color-toyota-ink);
+        background: var(--color-toyota-50);
+      }
+    }
+  </style>
+</head>
+<body class="bg-toyota-50 text-toyota-ink">
+
+  <!-- ============================================================ -->
+  <!-- Brand stripe — every Toyota surface starts with this 4px bar -->
+  <!-- ============================================================ -->
+  <div class="h-1 bg-toyota-red"></div>
+
+  <!-- ============================================================ -->
+  <!-- Layout: sticky side-nav + main reference column                -->
+  <!-- ============================================================ -->
+  <div class="max-w-[1280px] mx-auto px-10 py-10 grid grid-cols-[200px_1fr] gap-12">
+
+    <!-- Side navigation — jump links -->
+    <aside class="sticky top-10 self-start text-sm">
+      <div class="flex items-baseline gap-2 mb-6">
+        <span class="text-toyota-red font-extrabold tracking-[0.18em] text-base">TOYOTA</span>
+      </div>
+      <div class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold mb-3">Design System</div>
+      <nav class="flex flex-col gap-1.5 text-toyota-600">
+        <a href="#intro" class="hover:text-toyota-red">Introduction</a>
+        <a href="#color" class="hover:text-toyota-red">Color</a>
+        <a href="#type" class="hover:text-toyota-red">Typography</a>
+        <a href="#nav" class="hover:text-toyota-red">Navigation</a>
+        <a href="#metrics" class="hover:text-toyota-red">Metrics strip</a>
+        <a href="#buttons" class="hover:text-toyota-red">Buttons</a>
+        <a href="#badges" class="hover:text-toyota-red">Status badges</a>
+        <a href="#cards" class="hover:text-toyota-red">Cards</a>
+        <a href="#explainers" class="hover:text-toyota-red">Explainer cards</a>
+        <a href="#ai-card" class="hover:text-toyota-red">AI summary card</a>
+        <a href="#table" class="hover:text-toyota-red">Claim row</a>
+      </nav>
+    </aside>
+
+    <!-- Main column -->
+    <main class="min-w-0">
+
+      <!-- ====== INTRO ====== -->
+      <section id="intro" class="mb-16">
+        <div class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold mb-2">v0.1 · POC</div>
+        <h1 class="text-4xl font-bold tracking-tight text-toyota-ink mb-3">Warranty Reviewer Design System</h1>
+        <p class="text-lg text-toyota-600 leading-relaxed max-w-2xl">
+          A pared-down system for the agentic warranty-claims demo. Toyota brand red is reserved
+          for the single thing on screen the reviewer should look at next — flagged claims,
+          primary CTAs, AI-insight accents. Everything else lives on a warm-neutral gray ladder.
+        </p>
+
+        <div class="mt-6 inline-flex items-center gap-2 text-xs text-toyota-500 bg-white border border-toyota-200 rounded-md px-3 py-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-toyota-red"></span>
+          Tokens defined in <span class="font-mono text-toyota-700">styleguide.html</span> mirror
+          <span class="font-mono text-toyota-700">warranty-ui/src/index.css</span>
+        </div>
+      </section>
+
+      <!-- ====== COLOR ====== -->
+      <section id="color" class="mb-16">
+        <h2 class="text-2xl font-semibold tracking-tight mb-1">Color</h2>
+        <p class="text-sm text-toyota-500 mb-6">Brand red is a signal, not a fill. Use it for at most one thing per screen-region.</p>
+
+        <h3 class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold mb-3">Brand</h3>
+        <div class="grid grid-cols-4 gap-3 mb-8">
+          <!-- swatch component repeated -->
+          <div class="bg-white border border-toyota-200 rounded-lg overflow-hidden">
+            <div class="h-16 bg-toyota-red"></div>
+            <div class="p-3 text-xs">
+              <div class="font-semibold text-toyota-ink">toyota-red</div>
+              <div class="font-mono text-toyota-500">#EB0A1E</div>
+            </div>
+          </div>
+          <div class="bg-white border border-toyota-200 rounded-lg overflow-hidden">
+            <div class="h-16 bg-toyota-red-hover"></div>
+            <div class="p-3 text-xs">
+              <div class="font-semibold text-toyota-ink">toyota-red-hover</div>
+              <div class="font-mono text-toyota-500">#C8081A</div>
+            </div>
+          </div>
+          <div class="bg-white border border-toyota-200 rounded-lg overflow-hidden">
+            <div class="h-16 bg-toyota-red-tint"></div>
+            <div class="p-3 text-xs">
+              <div class="font-semibold text-toyota-ink">toyota-red-tint</div>
+              <div class="font-mono text-toyota-500">#FCE6E8</div>
+            </div>
+          </div>
+          <div class="bg-white border border-toyota-200 rounded-lg overflow-hidden">
+            <div class="h-16 bg-toyota-ink"></div>
+            <div class="p-3 text-xs">
+              <div class="font-semibold text-toyota-ink">toyota-ink</div>
+              <div class="font-mono text-toyota-500">#1A1A1A</div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold mb-3">Neutrals</h3>
+        <div class="grid grid-cols-9 gap-1.5 mb-8">
+          <div class="bg-toyota-50    border border-toyota-200 rounded h-12 flex items-end p-1 text-[10px] font-mono text-toyota-500">50</div>
+          <div class="bg-toyota-100   border border-toyota-200 rounded h-12 flex items-end p-1 text-[10px] font-mono text-toyota-500">100</div>
+          <div class="bg-toyota-200   border border-toyota-200 rounded h-12 flex items-end p-1 text-[10px] font-mono text-toyota-500">200</div>
+          <div class="bg-toyota-300   rounded h-12 flex items-end p-1 text-[10px] font-mono text-toyota-500">300</div>
+          <div class="bg-toyota-400   rounded h-12 flex items-end p-1 text-[10px] font-mono text-white">400</div>
+          <div class="bg-toyota-500   rounded h-12 flex items-end p-1 text-[10px] font-mono text-white">500</div>
+          <div class="bg-toyota-600   rounded h-12 flex items-end p-1 text-[10px] font-mono text-white">600</div>
+          <div class="bg-toyota-700   rounded h-12 flex items-end p-1 text-[10px] font-mono text-white">700</div>
+          <div class="bg-toyota-800   rounded h-12 flex items-end p-1 text-[10px] font-mono text-white">800</div>
+        </div>
+
+        <h3 class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold mb-3">Semantic — warranty status</h3>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-white border border-toyota-200 rounded-lg overflow-hidden">
+            <div class="h-12 bg-status-clean"></div>
+            <div class="p-3">
+              <div class="text-sm font-semibold text-toyota-ink">Clean</div>
+              <div class="text-xs text-toyota-500">Claim passes all rules. Reviewer approves.</div>
+            </div>
+          </div>
+          <div class="bg-white border border-toyota-200 rounded-lg overflow-hidden">
+            <div class="h-12 bg-status-flagged"></div>
+            <div class="p-3">
+              <div class="text-sm font-semibold text-toyota-ink">Flagged</div>
+              <div class="text-xs text-toyota-500">Hard rule violation. Reviewer rejects.</div>
+            </div>
+          </div>
+          <div class="bg-white border border-toyota-200 rounded-lg overflow-hidden">
+            <div class="h-12 bg-status-anomaly"></div>
+            <div class="p-3">
+              <div class="text-sm font-semibold text-toyota-ink">Anomaly</div>
+              <div class="text-xs text-toyota-500">Pattern outlier. Reviewer escalates.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== TYPOGRAPHY ====== -->
+      <section id="type" class="mb-16">
+        <h2 class="text-2xl font-semibold tracking-tight mb-1">Typography</h2>
+        <p class="text-sm text-toyota-500 mb-6">Inter stands in for proprietary Toyota Type. JetBrains Mono for codes and IDs.</p>
+
+        <div class="bg-white border border-toyota-200 rounded-lg divide-y divide-toyota-100">
+          <div class="flex items-baseline gap-6 p-5">
+            <div class="text-[10px] uppercase tracking-wider text-toyota-400 font-mono w-32 shrink-0">H1 · 36/700</div>
+            <div class="text-4xl font-bold tracking-tight">Warranty Reviewer</div>
+          </div>
+          <div class="flex items-baseline gap-6 p-5">
+            <div class="text-[10px] uppercase tracking-wider text-toyota-400 font-mono w-32 shrink-0">H2 · 24/600</div>
+            <div class="text-2xl font-semibold tracking-tight">Claim Queue</div>
+          </div>
+          <div class="flex items-baseline gap-6 p-5">
+            <div class="text-[10px] uppercase tracking-wider text-toyota-400 font-mono w-32 shrink-0">H3 · 11/600</div>
+            <div class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold">Policy Flags</div>
+          </div>
+          <div class="flex items-baseline gap-6 p-5">
+            <div class="text-[10px] uppercase tracking-wider text-toyota-400 font-mono w-32 shrink-0">Body · 15/400</div>
+            <div class="text-[15px] leading-relaxed text-toyota-ink">Labor hours 4× the rule threshold for code R-01. Recommend reject.</div>
+          </div>
+          <div class="flex items-baseline gap-6 p-5">
+            <div class="text-[10px] uppercase tracking-wider text-toyota-400 font-mono w-32 shrink-0">Small · 13/500</div>
+            <div class="text-sm font-medium text-toyota-600">2017 Camry · 87,432 mi · Powertrain</div>
+          </div>
+          <div class="flex items-baseline gap-6 p-5">
+            <div class="text-[10px] uppercase tracking-wider text-toyota-400 font-mono w-32 shrink-0">Mono</div>
+            <div class="font-mono text-sm text-toyota-700">CLM-00002 · 4T1B11HK5JU123456</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== NAVIGATION ====== -->
+      <section id="nav" class="mb-16">
+        <h2 class="text-2xl font-semibold tracking-tight mb-1">Navigation</h2>
+        <p class="text-sm text-toyota-500 mb-6">Brand stripe + white bar with wordmark, app name, page tabs, and user profile. Stays visible across all routes.</p>
+
+        <div class="rounded-lg overflow-hidden border border-toyota-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <div class="h-1 bg-toyota-red"></div>
+          <div class="bg-white px-8 py-4 flex items-center gap-10">
+            <div class="flex items-baseline gap-3">
+              <span class="text-toyota-red font-extrabold tracking-[0.18em] text-lg">TOYOTA</span>
+              <span class="h-5 w-px bg-toyota-300"></span>
+              <span class="text-toyota-ink font-semibold text-base">Warranty Reviewer</span>
+            </div>
+
+            <nav class="flex items-center gap-1 text-sm font-medium">
+              <a class="px-3 py-1.5 rounded-md text-toyota-ink bg-toyota-100">Queue</a>
+              <a class="px-3 py-1.5 rounded-md text-toyota-600 hover:text-toyota-ink">Reports</a>
+              <a class="px-3 py-1.5 rounded-md text-toyota-600 hover:text-toyota-ink">Rules</a>
+              <a class="px-3 py-1.5 rounded-md text-toyota-600 hover:text-toyota-ink">Settings</a>
+            </nav>
+
+            <div class="ml-auto flex items-center gap-3">
+              <button class="w-8 h-8 rounded-md border border-toyota-200 hover:border-toyota-300 flex items-center justify-center text-toyota-600" title="Notifications">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+              </button>
+              <div class="flex items-center gap-3 pl-3 border-l border-toyota-200">
+                <div class="w-9 h-9 rounded-full bg-toyota-ink text-white text-sm font-semibold flex items-center justify-center">JD</div>
+                <div class="leading-tight">
+                  <div class="text-sm font-semibold text-toyota-ink">Jordan Diaz</div>
+                  <div class="text-[11px] text-toyota-500">Senior Reviewer · Dallas RO</div>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-toyota-400"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="mt-3 text-xs text-toyota-500">Profile chip is interactive — clicking opens a small menu (sign out, switch dealer, view metrics). Notification bell shows unread count badge in <span class="text-toyota-red font-semibold">toyota-red</span> when {'>'}0.</p>
+      </section>
+
+      <!-- ====== METRICS STRIP ====== -->
+      <section id="metrics" class="mb-16">
+        <h2 class="text-2xl font-semibold tracking-tight mb-1">Metrics strip</h2>
+        <p class="text-sm text-toyota-500 mb-6">Persistent KPI row. Leakage prevented uses brand red for emphasis — it's the metric stakeholders read first.</p>
+
+        <div class="bg-white border border-toyota-200 rounded-lg px-8 py-4 flex gap-10 text-sm">
+          <div class="flex flex-col">
+            <span class="text-[11px] uppercase tracking-wider text-toyota-500 font-medium">Claims Reviewed</span>
+            <span class="text-base font-semibold tabular-nums text-toyota-ink">14</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[11px] uppercase tracking-wider text-toyota-500 font-medium">Flags Caught</span>
+            <span class="text-base font-semibold tabular-nums text-toyota-ink">9</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[11px] uppercase tracking-wider text-toyota-500 font-medium">Leakage Prevented</span>
+            <span class="text-base font-semibold tabular-nums text-toyota-red">$42,318.00</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[11px] uppercase tracking-wider text-toyota-500 font-medium">Accuracy</span>
+            <span class="text-base font-semibold tabular-nums text-toyota-ink">94%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== BUTTONS ====== -->
+      <section id="buttons" class="mb-16">
+        <h2 class="text-2xl font-semibold tracking-tight mb-1">Buttons</h2>
+        <p class="text-sm text-toyota-500 mb-6">One filled red primary per surface — the destructive Reject CTA. Approve and Escalate stay outlined.</p>
+
+        <div class="bg-white border border-toyota-200 rounded-lg p-6 flex flex-wrap gap-3 items-center">
+          <button class="bg-toyota-red text-white border border-toyota-red hover:bg-toyota-red-hover px-5 py-2.5 rounded-md text-sm font-semibold uppercase tracking-wider">Reject Claim</button>
+          <button class="bg-white border border-status-clean-border text-status-clean hover:bg-status-clean-tint px-5 py-2.5 rounded-md text-sm font-semibold uppercase tracking-wider">Approve</button>
+          <button class="bg-white border border-status-anomaly-border text-status-anomaly hover:bg-status-anomaly-tint px-5 py-2.5 rounded-md text-sm font-semibold uppercase tracking-wider">Escalate for Review</button>
+          <button class="bg-toyota-ink text-white px-5 py-2.5 rounded-md text-sm font-semibold">Save</button>
+          <button class="bg-white border border-toyota-200 hover:border-toyota-300 text-toyota-700 px-5 py-2.5 rounded-md text-sm font-medium">Cancel</button>
+          <button class="text-toyota-600 hover:text-toyota-red px-3 py-2.5 text-sm font-medium">← Back to Queue</button>
+        </div>
+
+        <div class="mt-3 grid grid-cols-2 gap-3 text-xs text-toyota-500">
+          <div><span class="text-toyota-red font-semibold">Filled red</span> = single destructive primary. Never two on one screen.</div>
+          <div><span class="text-toyota-ink font-semibold">Filled ink</span> = neutral primary (Save). <span class="text-toyota-700 font-semibold">Outlined</span> = secondary.</div>
+        </div>
+      </section>
+
+      <!-- ====== STATUS BADGES ====== -->
+      <section id="badges" class="mb-16">
+        <h2 class="text-2xl font-semibold tracking-tight mb-1">Status badges</h2>
+        <p class="text-sm text-toyota-500 mb-6">Uppercase, tracked, square-cornered. Used in the queue Status column and decision Result column.</p>
+
+        <div class="bg-white border border-toyota-200 rounded-lg p-6">
+          <div class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold mb-3">Agent verdict</div>
+          <div class="flex gap-2 mb-6">
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-status-clean-tint text-status-clean border-status-clean-border">Clean</span>
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-status-flagged-tint text-status-flagged border-status-flagged-border">Flagged</span>
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-status-anomaly-tint text-status-anomaly border-status-anomaly-border">Anomaly</span>
+          </div>
+
+          <div class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold mb-3">Reviewer decision</div>
+          <div class="flex gap-2 mb-6">
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-status-clean-tint text-status-clean border-status-clean-border">Approve</span>
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-status-flagged-tint text-status-flagged border-status-flagged-border">Reject</span>
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-status-anomaly-tint text-status-anomaly border-status-anomaly-border">Escalate</span>
+          </div>
+
+          <div class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold mb-3">Severity</div>
+          <div class="flex gap-2 mb-6">
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-sm border bg-toyota-100 text-toyota-700 border-toyota-200">Low</span>
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-sm border bg-status-anomaly-tint text-status-anomaly border-status-anomaly-border">Medium</span>
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-sm border bg-status-flagged-tint text-status-flagged border-status-flagged-border">High</span>
+          </div>
+
+          <div class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold mb-3">Warranty type</div>
+          <div class="flex gap-2">
+            <span class="text-[11px] font-medium px-2.5 py-0.5 rounded-sm border bg-toyota-100 text-toyota-600 border-toyota-200">basic</span>
+            <span class="text-[11px] font-medium px-2.5 py-0.5 rounded-sm border bg-toyota-ink text-white border-toyota-ink">powertrain</span>
+            <span class="text-[11px] font-medium px-2.5 py-0.5 rounded-sm border bg-white text-toyota-ink border-toyota-ink">extended</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== CARDS ====== -->
+      <section id="cards" class="mb-16">
+        <h2 class="text-2xl font-semibold tracking-tight mb-1">Cards</h2>
+        <p class="text-sm text-toyota-500 mb-6">White surface, 1px toyota-200 border, 10px radius. No drop shadows — borders carry the elevation.</p>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-white border border-toyota-200 rounded-lg p-5">
+            <div class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold mb-3">Standard panel</div>
+            <p class="text-sm text-toyota-700 leading-relaxed">Used for Metadata, Policy Flags, Parts Detail. Section heading uses the uppercase-tracked label pattern shown above.</p>
+          </div>
+          <div class="bg-toyota-50 border border-dashed border-toyota-300 rounded-lg p-5">
+            <div class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold mb-3">Empty / muted state</div>
+            <p class="text-sm text-toyota-600 leading-relaxed">Dashed border + tinted surface signals "nothing here yet" without using a status color.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== EXPLAINER CARDS ====== -->
+      <section id="explainers" class="mb-16">
+        <h2 class="text-2xl font-semibold tracking-tight mb-1">Explainer cards</h2>
+        <p class="text-sm text-toyota-500 mb-6">Used on onboarding / empty-state screens to explain what each agent does. Three-up layout, equal height, brand-red icon glyph.</p>
+
+        <div class="grid grid-cols-3 gap-4">
+          <article class="bg-white border border-toyota-200 rounded-lg p-6">
+            <div class="w-10 h-10 rounded-md bg-toyota-red-tint text-toyota-red flex items-center justify-center mb-4">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 5-4 9-9 9s-9-4-9-9 4-9 9-9c2 0 4 .6 5.5 1.7"/></svg>
+            </div>
+            <h3 class="text-base font-semibold text-toyota-ink mb-1.5">Policy Validation</h3>
+            <p class="text-sm text-toyota-600 leading-relaxed">Checks every claim against ~30 warranty rules. Flags hours over threshold, out-of-warranty mileage, unauthorized parts. Returns pass/fail per rule with severity.</p>
+          </article>
+
+          <article class="bg-white border border-toyota-200 rounded-lg p-6">
+            <div class="w-10 h-10 rounded-md bg-toyota-red-tint text-toyota-red flex items-center justify-center mb-4">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+            </div>
+            <h3 class="text-base font-semibold text-toyota-ink mb-1.5">AI Summary</h3>
+            <p class="text-sm text-toyota-600 leading-relaxed">Reads the technician notes plus validation output and produces a three-sentence reviewer narrative with a recommended action and confidence score.</p>
+          </article>
+
+          <article class="bg-white border border-toyota-200 rounded-lg p-6">
+            <div class="w-10 h-10 rounded-md bg-toyota-red-tint text-toyota-red flex items-center justify-center mb-4">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <h3 class="text-base font-semibold text-toyota-ink mb-1.5">Anomaly Detection</h3>
+            <p class="text-sm text-toyota-600 leading-relaxed">Spots statistical outliers across dealers — repeat claim codes, unusual cost spikes, suspicious labor patterns. Surfaces patterns a single-claim review would miss.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ====== AI SUMMARY CARD ====== -->
+      <section id="ai-card" class="mb-16">
+        <h2 class="text-2xl font-semibold tracking-tight mb-1">AI summary card</h2>
+        <p class="text-sm text-toyota-500 mb-6">The primary demo moment. Toyota-red left border marks it as the AI insight. Never apply this treatment to anything else on the page.</p>
+
+        <div class="bg-white border border-toyota-200 border-l-4 border-l-toyota-red rounded-lg p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-[11px] uppercase tracking-wider text-toyota-500 font-semibold">AI Reviewer Summary</span>
+            <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-status-flagged-tint text-status-flagged border-status-flagged-border">Reject</span>
+            <span class="text-xs font-medium capitalize text-status-clean">High confidence</span>
+          </div>
+          <p class="text-[15px] text-toyota-ink leading-relaxed">
+            This claim reports 12.5 labor hours for repair code R-01, more than 4× the policy
+            threshold of 3 hours. Technician notes do not describe complications justifying the
+            overage. Recommend reject and return to dealer for revised documentation.
+          </p>
+          <button class="mt-4 text-xs text-toyota-600 hover:text-toyota-red font-medium uppercase tracking-wider">▸ Show source notes</button>
+        </div>
+      </section>
+
+      <!-- ====== CLAIM ROW / TABLE ====== -->
+      <section id="table" class="mb-20">
+        <h2 class="text-2xl font-semibold tracking-tight mb-1">Claim row</h2>
+        <p class="text-sm text-toyota-500 mb-6">Queue table row. Claim ID is a Toyota-red monospace link. Amount is right-aligned with tabular-nums. Hover reveals quick-action buttons.</p>
+
+        <div class="bg-white border border-toyota-200 rounded-lg overflow-hidden">
+          <table class="w-full text-sm text-left">
+            <thead>
+              <tr class="bg-toyota-50 text-toyota-500 text-[11px] font-semibold uppercase tracking-wider border-b border-toyota-200">
+                <th class="px-4 py-3">Claim ID</th>
+                <th class="px-4 py-3">Date</th>
+                <th class="px-4 py-3">Dealer</th>
+                <th class="px-4 py-3">Repair</th>
+                <th class="px-4 py-3 text-right">Amount</th>
+                <th class="px-4 py-3">Warranty</th>
+                <th class="px-4 py-3">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t border-toyota-100 hover:bg-toyota-50 cursor-pointer">
+                <td class="px-4 py-3 font-mono text-sm font-semibold text-toyota-red">CLM-00002</td>
+                <td class="px-4 py-3 text-toyota-600 tabular-nums">03/14/2025</td>
+                <td class="px-4 py-3 text-toyota-600">D-1142</td>
+                <td class="px-4 py-3">
+                  <span class="font-mono bg-toyota-100 text-toyota-700 text-xs font-medium px-2 py-0.5 rounded border border-toyota-200">R-01</span>
+                  <span class="ml-1.5 text-xs text-toyota-400">+2</span>
+                </td>
+                <td class="px-4 py-3 text-right font-semibold tabular-nums text-toyota-ink">$3,418.50</td>
+                <td class="px-4 py-3">
+                  <span class="text-[11px] font-medium px-2.5 py-0.5 rounded-sm border bg-toyota-ink text-white border-toyota-ink">powertrain</span>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-status-flagged-tint text-status-flagged border-status-flagged-border">Flagged</span>
+                </td>
+              </tr>
+              <tr class="border-t border-toyota-100 hover:bg-toyota-50 cursor-pointer">
+                <td class="px-4 py-3 font-mono text-sm font-semibold text-toyota-red">CLM-00004</td>
+                <td class="px-4 py-3 text-toyota-600 tabular-nums">03/12/2025</td>
+                <td class="px-4 py-3 text-toyota-600">D-2008</td>
+                <td class="px-4 py-3">
+                  <span class="font-mono bg-toyota-100 text-toyota-700 text-xs font-medium px-2 py-0.5 rounded border border-toyota-200">R-22</span>
+                </td>
+                <td class="px-4 py-3 text-right font-semibold tabular-nums text-toyota-ink">$1,205.00</td>
+                <td class="px-4 py-3">
+                  <span class="text-[11px] font-medium px-2.5 py-0.5 rounded-sm border bg-toyota-100 text-toyota-600 border-toyota-200">basic</span>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-status-anomaly-tint text-status-anomaly border-status-anomaly-border">Anomaly</span>
+                </td>
+              </tr>
+              <tr class="border-t border-toyota-100 hover:bg-toyota-50 cursor-pointer">
+                <td class="px-4 py-3 font-mono text-sm font-semibold text-toyota-red">CLM-00001</td>
+                <td class="px-4 py-3 text-toyota-600 tabular-nums">03/10/2025</td>
+                <td class="px-4 py-3 text-toyota-600">D-1142</td>
+                <td class="px-4 py-3">
+                  <span class="font-mono bg-toyota-100 text-toyota-700 text-xs font-medium px-2 py-0.5 rounded border border-toyota-200">R-03</span>
+                </td>
+                <td class="px-4 py-3 text-right font-semibold tabular-nums text-toyota-ink">$418.00</td>
+                <td class="px-4 py-3">
+                  <span class="text-[11px] font-medium px-2.5 py-0.5 rounded-sm border bg-white text-toyota-ink border-toyota-ink">extended</span>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-status-clean-tint text-status-clean border-status-clean-border">Clean</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="text-xs text-toyota-500 pb-10 border-t border-toyota-200 pt-6">
+        Toyota Warranty Reviewer · Design System v0.1 · POC sprint · Edit tokens in the
+        <span class="font-mono text-toyota-700">@theme</span> block at the top of this file.
+      </footer>
+
+    </main>
+  </div>
+</body>
+</html>
