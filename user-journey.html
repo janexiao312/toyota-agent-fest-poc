@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Journey Map — Agentic Warranty Claims Engine</title>
+  <style>
+    :root {
+      --blue-50: #eff6ff; --blue-100: #dbeafe; --blue-500: #3b82f6; --blue-600: #2563eb; --blue-800: #1e40af;
+      --red-50: #fef2f2; --red-100: #fee2e2; --red-500: #ef4444; --red-700: #b91c1c; --red-800: #991b1b;
+      --green-50: #f0fdf4; --green-100: #dcfce7; --green-500: #22c55e; --green-600: #16a34a; --green-700: #15803d;
+      --amber-50: #fffbeb; --amber-100: #fef3c7; --amber-500: #f59e0b; --amber-700: #b45309; --amber-800: #92400e;
+      --purple-50: #faf5ff; --purple-100: #f3e8ff; --purple-500: #a855f7; --purple-700: #7e22ce;
+      --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb; --gray-300: #d1d5db;
+      --gray-400: #9ca3af; --gray-500: #6b7280; --gray-600: #4b5563; --gray-700: #374151; --gray-800: #1f2937; --gray-900: #111827;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--gray-50); color: var(--gray-800); line-height: 1.6; }
+
+    .header { background: white; border-bottom: 1px solid var(--gray-200); padding: 28px 48px; }
+    .header h1 { font-size: 22px; font-weight: 700; color: var(--gray-900); }
+    .header p { color: var(--gray-500); font-size: 13px; margin-top: 2px; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+    .tag-blue { background: var(--blue-100); color: var(--blue-800); }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 32px 48px 80px; }
+
+    /* Persona section header */
+    .persona-header { display: flex; align-items: center; gap: 16px; margin: 48px 0 20px; padding-bottom: 16px; border-bottom: 2px solid var(--gray-200); }
+    .persona-header:first-of-type { margin-top: 0; }
+    .avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+    .persona-header h2 { font-size: 17px; font-weight: 700; color: var(--gray-900); }
+    .persona-header .quote { font-size: 13px; color: var(--gray-500); font-style: italic; margin-left: auto; max-width: 440px; text-align: right; }
+    .persona-header .freq { font-size: 11px; color: var(--gray-400); background: var(--gray-100); padding: 3px 10px; border-radius: 6px; margin-left: 12px; white-space: nowrap; }
+
+    /* Journey table */
+    .journey-map { min-width: 1000px; border-collapse: collapse; width: 100%; border: 1px solid var(--gray-200); border-radius: 14px; overflow: hidden; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 8px; }
+    .scroll-wrap { overflow-x: auto; }
+
+    .timeline-row { background: var(--gray-900); }
+    .timeline-row th { padding: 0; }
+    .phase-col { color: white; padding: 14px 16px; text-align: center; border-right: 1px solid rgba(255,255,255,0.1); }
+    .phase-col:last-child { border-right: none; }
+    .phase-label { font-size: 12px; font-weight: 700; letter-spacing: 0.3px; }
+    .phase-time { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
+    .phase-num { font-size: 10px; font-weight: 700; color: var(--gray-500); letter-spacing: 0.5px; margin-bottom: 2px; }
+
+    .row-label { width: 130px; min-width: 130px; padding: 12px 16px; background: var(--gray-50); font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; border-right: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-100); vertical-align: top; }
+    .row-label .sublabel { font-size: 10px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--gray-400); margin-top: 2px; }
+
+    .cell { padding: 14px 16px; border-right: 1px solid var(--gray-100); border-bottom: 1px solid var(--gray-100); vertical-align: top; }
+    .cell:last-child { border-right: none; }
+
+    .action-item { display: flex; align-items: flex-start; gap: 7px; margin-bottom: 8px; font-size: 12px; color: var(--gray-700); line-height: 1.45; }
+    .action-item:last-child { margin-bottom: 0; }
+    .action-num { width: 18px; height: 18px; border-radius: 50%; background: var(--blue-100); color: var(--blue-700); font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .action-item.green .action-num { background: var(--green-100); color: var(--green-700); }
+    .action-item.amber .action-num { background: var(--amber-100); color: var(--amber-700); }
+    .action-item.red .action-num { background: var(--red-100); color: var(--red-700); }
+    .action-item.purple .action-num { background: var(--purple-100); color: var(--purple-700); }
+
+    .touchpoint { display: inline-flex; align-items: center; font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 5px; margin: 2px 3px 2px 0; }
+    .tp-ui { background: var(--blue-50); color: var(--blue-700); border: 1px solid var(--blue-100); }
+    .tp-ai { background: var(--purple-50); color: var(--purple-700); border: 1px solid var(--purple-100); }
+    .tp-data { background: var(--green-50); color: var(--green-700); border: 1px solid var(--green-100); }
+    .tp-ext { background: var(--amber-50); color: var(--amber-700); border: 1px solid var(--amber-100); }
+
+    .thought { font-size: 11px; color: var(--gray-500); font-style: italic; margin-bottom: 6px; padding-left: 12px; border-left: 2px solid var(--gray-200); line-height: 1.45; }
+    .thought:last-child { margin-bottom: 0; }
+
+    .emotion-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .emotion-bar:last-child { margin-bottom: 0; }
+    .emotion-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+    .emotion-text { font-size: 11px; color: var(--gray-600); }
+    .emotion-level { height: 5px; border-radius: 3px; flex-grow: 1; max-width: 80px; }
+    .level-high { background: var(--green-500); }
+    .level-mid { background: var(--amber-400); }
+    .level-low { background: var(--red-400); }
+    .level-peak { background: linear-gradient(90deg, var(--blue-500), var(--green-500)); }
+
+    .pain { font-size: 11px; padding: 6px 10px; border-radius: 6px; margin-bottom: 6px; line-height: 1.4; }
+    .pain:last-child { margin-bottom: 0; }
+    .pain-point { background: var(--red-50); color: var(--red-700); border: 1px solid var(--red-100); }
+    .pain-opp { background: var(--green-50); color: var(--green-700); border: 1px solid var(--green-100); }
+
+    .comp-tag { display: inline-block; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 10px; background: var(--gray-100); color: var(--gray-600); padding: 2px 7px; border-radius: 4px; margin: 2px 2px 2px 0; }
+
+    /* Comparison table */
+    .comparison { margin-top: 48px; background: white; border: 1px solid var(--gray-200); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .comparison h3 { font-size: 14px; font-weight: 700; color: var(--gray-700); padding: 20px 24px 0; }
+    .comparison table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .comparison th { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 16px; text-align: left; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); }
+    .comparison td { font-size: 12px; color: var(--gray-700); padding: 10px 16px; border-bottom: 1px solid var(--gray-100); vertical-align: top; line-height: 1.45; }
+    .comparison tr:last-child td { border-bottom: none; }
+
+    .legend { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 20px; padding: 16px 0; border-top: 1px solid var(--gray-200); }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--gray-500); }
+    .legend-item .ldot { width: 9px; height: 9px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Customer Journey Maps <span class="tag tag-blue">3 Personas</span></h1>
+    <p>Agentic Warranty Claims Engine -- POC Sprint</p>
+  </div>
+
+  <div class="container">
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         PERSONA 1 — WARRANTY ANALYST
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <div class="persona-header">
+      <div class="avatar" style="background:var(--blue-600)">WA</div>
+      <div>
+        <h2>Persona 1 -- Warranty Analyst</h2>
+      </div>
+      <span class="freq">Daily, all-day queue work</span>
+      <div class="quote">"I need to know why it was flagged, not just that it was flagged."</div>
+    </div>
+
+    <div class="scroll-wrap">
+    <table class="journey-map">
+      <thead>
+        <tr class="timeline-row">
+          <th class="phase-col" style="background:var(--gray-700); width:130px; min-width:130px;"><span class="phase-label">PHASE</span></th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--blue-500);">
+            <div class="phase-num">I</div>
+            <div class="phase-label">First-Pass Review</div>
+            <div class="phase-time">Daily -- ~2 min/claim</div>
+          </th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--amber-500);">
+            <div class="phase-num">II</div>
+            <div class="phase-label">Deep Investigation</div>
+            <div class="phase-time">Per flagged claim -- ~3 min</div>
+          </th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--green-500);">
+            <div class="phase-num">III</div>
+            <div class="phase-label">Decision</div>
+            <div class="phase-time">~30 sec per action</div>
+          </th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--purple-500);">
+            <div class="phase-num">IV</div>
+            <div class="phase-label">Escalation Return</div>
+            <div class="phase-time">Ad-hoc -- when assigned</div>
+          </th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--red-500);">
+            <div class="phase-num">V</div>
+            <div class="phase-label">Contest Resolution</div>
+            <div class="phase-time">Per contested claim -- ~5 min</div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- Actions -->
+        <tr>
+          <td class="row-label">Actions<div class="sublabel">What they do</div></td>
+          <td class="cell">
+            <div class="action-item"><span class="action-num">1</span> Open queue -- 55 claims loaded, flagged sorted to top</div>
+            <div class="action-item"><span class="action-num">2</span> Scan status badges: Clean / Flagged / Anomaly</div>
+            <div class="action-item"><span class="action-num">3</span> Filter by tab or search by Claim ID / Dealer ID</div>
+            <div class="action-item"><span class="action-num">4</span> Glance at savings counter for session context</div>
+          </td>
+          <td class="cell">
+            <div class="action-item amber"><span class="action-num">5</span> Click flagged claim to open detail view</div>
+            <div class="action-item amber"><span class="action-num">6</span> Read AI narrative -- 3 sentences, specific thresholds cited</div>
+            <div class="action-item amber"><span class="action-num">7</span> Check per-rule PASS/FAIL breakdown with severity badges</div>
+            <div class="action-item amber"><span class="action-num">8</span> Verify parts table -- costs, quantities, line totals</div>
+          </td>
+          <td class="cell">
+            <div class="action-item green"><span class="action-num">9</span> Click <strong>Approve</strong> -- claim marked green</div>
+            <div class="action-item amber"><span class="action-num">10</span> Click <strong>Escalate</strong> -- flagged for senior review</div>
+            <div class="action-item red"><span class="action-num">11</span> Click <strong>Reject</strong> -- leakage counter increments</div>
+          </td>
+          <td class="cell">
+            <div class="action-item purple"><span class="action-num">12</span> Reopen previously escalated claim</div>
+            <div class="action-item purple"><span class="action-num">13</span> Review timeline -- see original decision context</div>
+            <div class="action-item purple"><span class="action-num">14</span> Read updated AI brief if anything changed</div>
+            <div class="action-item purple"><span class="action-num">15</span> Make final decision: approve or reject</div>
+          </td>
+          <td class="cell">
+            <div class="action-item red"><span class="action-num">16</span> Open contested claim -- customer pushed back</div>
+            <div class="action-item red"><span class="action-num">17</span> Read resolution brief: new evidence, re-validation, precedents</div>
+            <div class="action-item red"><span class="action-num">18</span> Enter ruling notes (required -- becomes customer explanation)</div>
+            <div class="action-item red"><span class="action-num">19</span> Uphold or overturn the original decision</div>
+          </td>
+        </tr>
+
+        <!-- Touchpoints -->
+        <tr>
+          <td class="row-label">Touchpoints<div class="sublabel">UI surfaces</div></td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Claim Queue</span>
+            <span class="touchpoint tp-ui">Status Badges</span>
+            <span class="touchpoint tp-ui">Filter Tabs</span>
+            <span class="touchpoint tp-ui">Savings Counter</span>
+            <span class="touchpoint tp-data">claims.json</span>
+          </td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Claim Detail</span>
+            <span class="touchpoint tp-ui">Metadata Panel</span>
+            <span class="touchpoint tp-ai">AI Summary Panel</span>
+            <span class="touchpoint tp-ai">Policy Flags Panel</span>
+            <span class="touchpoint tp-ui">Parts Panel</span>
+          </td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Action Bar</span>
+            <span class="touchpoint tp-ui">Approve / Escalate / Reject</span>
+          </td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Claim Detail</span>
+            <span class="touchpoint tp-ai">Updated AI Brief</span>
+            <span class="touchpoint tp-ui">Decision Timeline</span>
+          </td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Resolution Brief Panel</span>
+            <span class="touchpoint tp-ai">Re-validation Output</span>
+            <span class="touchpoint tp-ui">Ruling Notes Field</span>
+          </td>
+        </tr>
+
+        <!-- Thinking -->
+        <tr>
+          <td class="row-label">Thinking<div class="sublabel">Internal thoughts</div></td>
+          <td class="cell">
+            <div class="thought">"Which claims need my attention most?"</div>
+            <div class="thought">"Let me start with the highest-amount flagged claims."</div>
+          </td>
+          <td class="cell">
+            <div class="thought">"8.5 labor hours vs. a 2.0-hour limit -- that's a clear reject."</div>
+            <div class="thought">"I would have missed the out-of-warranty mileage on my own."</div>
+          </td>
+          <td class="cell">
+            <div class="thought">"The AI recommendation matches my assessment."</div>
+            <div class="thought">"This borderline case needs a more senior set of eyes."</div>
+          </td>
+          <td class="cell">
+            <div class="thought">"I remember this one -- what's changed since I escalated it?"</div>
+            <div class="thought">"The updated brief makes the call straightforward now."</div>
+          </td>
+          <td class="cell">
+            <div class="thought">"The customer's diagnostic report actually changes the picture."</div>
+            <div class="thought">"My ruling notes need to be clear -- they'll go to the customer."</div>
+          </td>
+        </tr>
+
+        <!-- Feeling -->
+        <tr>
+          <td class="row-label">Feeling<div class="sublabel">Emotional state</div></td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--amber-500)"></span>
+              <span class="emotion-text">Neutral -- orienting to today's queue</span>
+              <span class="emotion-level level-mid"></span>
+            </div>
+          </td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--green-500)"></span>
+              <span class="emotion-text">Impressed -- AI caught what I'd miss</span>
+              <span class="emotion-level level-high"></span>
+            </div>
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--amber-500)"></span>
+              <span class="emotion-text">Focused -- validating the reasoning</span>
+              <span class="emotion-level level-mid"></span>
+            </div>
+          </td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--green-500)"></span>
+              <span class="emotion-text">Confident -- specific data backs decision</span>
+              <span class="emotion-level level-high"></span>
+            </div>
+          </td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--amber-500)"></span>
+              <span class="emotion-text">Cautious -- need to recall original context</span>
+              <span class="emotion-level level-mid"></span>
+            </div>
+          </td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--red-400)"></span>
+              <span class="emotion-text">Careful -- ruling affects the customer</span>
+              <span class="emotion-level level-low"></span>
+            </div>
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--green-500)"></span>
+              <span class="emotion-text">Assured -- precedents support the call</span>
+              <span class="emotion-level level-high"></span>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Pain Points & Opportunities -->
+        <tr>
+          <td class="row-label">Pain Points &amp; Opportunities</td>
+          <td class="cell">
+            <div class="pain pain-point">55-claim queue can feel overwhelming without clear priority signals</div>
+            <div class="pain pain-opp">Pre-sorted by severity + amount surfaces highest-value claims first</div>
+          </td>
+          <td class="cell">
+            <div class="pain pain-point">Vague AI output erodes trust -- analyst reverts to manual review</div>
+            <div class="pain pain-opp">Specific thresholds in the narrative ("325% overage") earn instant trust</div>
+          </td>
+          <td class="cell">
+            <div class="pain pain-point">Borderline claims cause hesitation without an escalate option</div>
+            <div class="pain pain-opp">One-click actions remove friction; every decision is defensible</div>
+          </td>
+          <td class="cell">
+            <div class="pain pain-point">Returning to a claim without original context costs time</div>
+            <div class="pain pain-opp">Decision timeline preserves full history</div>
+          </td>
+          <td class="cell">
+            <div class="pain pain-point">Ruling notes are mandatory but slow to write from scratch</div>
+            <div class="pain pain-opp">Resolution brief pre-surfaces new evidence and precedents</div>
+          </td>
+        </tr>
+
+        <!-- Components -->
+        <tr>
+          <td class="row-label">Components<div class="sublabel">React files</div></td>
+          <td class="cell">
+            <span class="comp-tag">ClaimQueue.jsx</span>
+            <span class="comp-tag">ClaimRow.jsx</span>
+            <span class="comp-tag">SavingsCounter.jsx</span>
+          </td>
+          <td class="cell">
+            <span class="comp-tag">ClaimDetail.jsx</span>
+            <span class="comp-tag">MetadataPanel.jsx</span>
+            <span class="comp-tag">AISummaryPanel.jsx</span>
+            <span class="comp-tag">PolicyFlagsPanel.jsx</span>
+            <span class="comp-tag">PartsPanel.jsx</span>
+          </td>
+          <td class="cell">
+            <span class="comp-tag">ActionBar.jsx</span>
+          </td>
+          <td class="cell">
+            <span class="comp-tag">ClaimDetail.jsx</span>
+            <span class="comp-tag">AISummaryPanel.jsx</span>
+          </td>
+          <td class="cell">
+            <span class="comp-tag">ResolutionBriefPanel</span>
+            <span class="comp-tag">ActionBar.jsx</span>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         PERSONA 2 — CLAIMS OPERATIONS MANAGER
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <div class="persona-header">
+      <div class="avatar" style="background:var(--purple-500)">CM</div>
+      <div>
+        <h2>Persona 2 -- Claims Operations Manager</h2>
+      </div>
+      <span class="freq">Low-medium -- monitoring &amp; spot checks</span>
+      <div class="quote">"I don't need to open every claim. I need a number I can take upstairs."</div>
+    </div>
+
+    <div class="scroll-wrap">
+    <table class="journey-map">
+      <thead>
+        <tr class="timeline-row">
+          <th class="phase-col" style="background:var(--gray-700); width:130px; min-width:130px;"><span class="phase-label">PHASE</span></th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--blue-500);">
+            <div class="phase-num">I</div>
+            <div class="phase-label">Morning Check</div>
+            <div class="phase-time">Daily -- ~2 min</div>
+          </th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--amber-500);">
+            <div class="phase-num">II</div>
+            <div class="phase-label">Anomaly Investigation</div>
+            <div class="phase-time">Ad-hoc -- when patterns appear</div>
+          </th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--green-500);">
+            <div class="phase-num">III</div>
+            <div class="phase-label">Drill-In</div>
+            <div class="phase-time">Occasional -- ~3 min</div>
+          </th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--purple-500);">
+            <div class="phase-num">IV</div>
+            <div class="phase-label">Reporting</div>
+            <div class="phase-time">Weekly/monthly -- ~5 min</div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- Actions -->
+        <tr>
+          <td class="row-label">Actions<div class="sublabel">What they do</div></td>
+          <td class="cell">
+            <div class="action-item"><span class="action-num">1</span> Open app -- go straight to savings counter</div>
+            <div class="action-item"><span class="action-num">2</span> Check leakage prevented total and accuracy %</div>
+            <div class="action-item"><span class="action-num">3</span> Verify overnight batch processed without issues</div>
+          </td>
+          <td class="cell">
+            <div class="action-item amber"><span class="action-num">4</span> Filter to Anomaly tab -- amber-badged claims</div>
+            <div class="action-item amber"><span class="action-num">5</span> Spot dealer ID clusters in the anomaly list</div>
+            <div class="action-item amber"><span class="action-num">6</span> Read AI pattern narrative -- statistical signals, not scores</div>
+          </td>
+          <td class="cell">
+            <div class="action-item purple"><span class="action-num">7</span> Click into a specific anomaly claim for detail</div>
+            <div class="action-item purple"><span class="action-num">8</span> Review AI summary explaining dealer behaviour pattern</div>
+            <div class="action-item purple"><span class="action-num">9</span> Action directly or assign to an analyst</div>
+          </td>
+          <td class="cell">
+            <div class="action-item green"><span class="action-num">10</span> Pull savings counter metrics for leadership report</div>
+            <div class="action-item green"><span class="action-num">11</span> Compare anomaly detection rate vs. rules-only baseline</div>
+            <div class="action-item green"><span class="action-num">12</span> Track escalation rate and resolution time trends</div>
+          </td>
+        </tr>
+
+        <!-- Touchpoints -->
+        <tr>
+          <td class="row-label">Touchpoints<div class="sublabel">UI surfaces</div></td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Savings Counter</span>
+            <span class="touchpoint tp-ui">Accuracy %</span>
+            <span class="touchpoint tp-ui">Claims Reviewed</span>
+          </td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Claim Queue (Anomaly tab)</span>
+            <span class="touchpoint tp-ai">AI Pattern Narrative</span>
+            <span class="touchpoint tp-ui">Dealer ID Column</span>
+          </td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Claim Detail</span>
+            <span class="touchpoint tp-ai">AI Summary Panel</span>
+          </td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Savings Counter</span>
+            <span class="touchpoint tp-ui">Leakage Prevented ($)</span>
+          </td>
+        </tr>
+
+        <!-- Thinking -->
+        <tr>
+          <td class="row-label">Thinking<div class="sublabel">Internal thoughts</div></td>
+          <td class="cell">
+            <div class="thought">"Did the overnight batch process cleanly?"</div>
+            <div class="thought">"Accuracy is holding at 100% -- good."</div>
+          </td>
+          <td class="cell">
+            <div class="thought">"This dealer has 14 ECM claims in 30 days -- regional average is 2."</div>
+            <div class="thought">"These passed all rules but the agent still caught the pattern."</div>
+          </td>
+          <td class="cell">
+            <div class="thought">"The AI explains the statistical signal clearly. I can act on this."</div>
+          </td>
+          <td class="cell">
+            <div class="thought">"$12,450 leakage prevented -- that's a defensible number for leadership."</div>
+            <div class="thought">"Anomaly detection is catching what the old rules engine missed."</div>
+          </td>
+        </tr>
+
+        <!-- Feeling -->
+        <tr>
+          <td class="row-label">Feeling<div class="sublabel">Emotional state</div></td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--green-500)"></span>
+              <span class="emotion-text">Reassured -- metrics are healthy</span>
+              <span class="emotion-level level-high"></span>
+            </div>
+          </td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--amber-500)"></span>
+              <span class="emotion-text">Alert -- pattern demands attention</span>
+              <span class="emotion-level level-mid"></span>
+            </div>
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--green-500)"></span>
+              <span class="emotion-text">Validated -- system catching what rules missed</span>
+              <span class="emotion-level level-high"></span>
+            </div>
+          </td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--green-500)"></span>
+              <span class="emotion-text">In control -- can act or delegate</span>
+              <span class="emotion-level level-high"></span>
+            </div>
+          </td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--blue-500)"></span>
+              <span class="emotion-text">Confident -- numbers are defensible</span>
+              <span class="emotion-level level-peak"></span>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Pain Points & Opportunities -->
+        <tr>
+          <td class="row-label">Pain Points &amp; Opportunities</td>
+          <td class="cell">
+            <div class="pain pain-point">Leakage reports are currently retrospective -- damage already approved</div>
+            <div class="pain pain-opp">Live counter provides real-time visibility without waiting for reports</div>
+          </td>
+          <td class="cell">
+            <div class="pain pain-point">Anomalies that don't trip rules pass through undetected</div>
+            <div class="pain pain-opp">AI pattern detection catches statistical outliers beyond the rules engine</div>
+          </td>
+          <td class="cell">
+            <div class="pain pain-point">No aggregate view of dealer behaviour -- everything is claim-by-claim</div>
+            <div class="pain pain-opp">Pattern narrative aggregates dealer-level signals in plain language</div>
+          </td>
+          <td class="cell">
+            <div class="pain pain-point">Metrics are manually assembled -- no live counter exists today</div>
+            <div class="pain pain-opp">Dollar-value framing resonates directly with leadership</div>
+          </td>
+        </tr>
+
+        <!-- Components -->
+        <tr>
+          <td class="row-label">Components<div class="sublabel">React files</div></td>
+          <td class="cell">
+            <span class="comp-tag">SavingsCounter.jsx</span>
+          </td>
+          <td class="cell">
+            <span class="comp-tag">ClaimQueue.jsx</span>
+            <span class="comp-tag">ClaimRow.jsx</span>
+          </td>
+          <td class="cell">
+            <span class="comp-tag">ClaimDetail.jsx</span>
+            <span class="comp-tag">AISummaryPanel.jsx</span>
+          </td>
+          <td class="cell">
+            <span class="comp-tag">SavingsCounter.jsx</span>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         PERSONA 3 — THE CUSTOMER
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <div class="persona-header">
+      <div class="avatar" style="background:var(--green-600)">CU</div>
+      <div>
+        <h2>Persona 3 -- The Customer</h2>
+      </div>
+      <span class="freq">Rare -- per claim lifecycle</span>
+      <div class="quote">"I just need to understand why my claim was denied."</div>
+    </div>
+
+    <div class="scroll-wrap">
+    <table class="journey-map">
+      <thead>
+        <tr class="timeline-row">
+          <th class="phase-col" style="background:var(--gray-700); width:130px; min-width:130px;"><span class="phase-label">PHASE</span></th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--blue-500);">
+            <div class="phase-num">I</div>
+            <div class="phase-label">Receive Decision</div>
+            <div class="phase-time">Day 1 -- notification</div>
+          </th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--amber-500);">
+            <div class="phase-num">II</div>
+            <div class="phase-label">Understand Explanation</div>
+            <div class="phase-time">Day 1 -- ~2 min reading</div>
+          </th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--red-500);">
+            <div class="phase-num">III</div>
+            <div class="phase-label">Contest Decision</div>
+            <div class="phase-time">Day 1-3 -- if disagree</div>
+          </th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--purple-500);">
+            <div class="phase-num">IV</div>
+            <div class="phase-label">Wait &amp; Track</div>
+            <div class="phase-time">Days 3-10 -- async</div>
+          </th>
+          <th class="phase-col" style="border-bottom: 3px solid var(--green-500);">
+            <div class="phase-num">V</div>
+            <div class="phase-label">Receive Resolution</div>
+            <div class="phase-time">Day 10+ -- final ruling</div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- Actions -->
+        <tr>
+          <td class="row-label">Actions<div class="sublabel">What they do</div></td>
+          <td class="cell">
+            <div class="action-item"><span class="action-num">1</span> Receive notification that claim has been decided</div>
+            <div class="action-item"><span class="action-num">2</span> Open customer portal to see the outcome</div>
+          </td>
+          <td class="cell">
+            <div class="action-item amber"><span class="action-num">3</span> Read plain-language explanation of the decision</div>
+            <div class="action-item amber"><span class="action-num">4</span> See specific numbers cited -- hours, mileage, thresholds</div>
+            <div class="action-item amber"><span class="action-num">5</span> Decide: accept the outcome or push back</div>
+          </td>
+          <td class="cell">
+            <div class="action-item red"><span class="action-num">6</span> Click "I disagree with this decision"</div>
+            <div class="action-item red"><span class="action-num">7</span> Enter reason for contest</div>
+            <div class="action-item red"><span class="action-num">8</span> Attach supporting evidence (e.g. diagnostic report)</div>
+            <div class="action-item red"><span class="action-num">9</span> Submit -- receive immediate confirmation</div>
+          </td>
+          <td class="cell">
+            <div class="action-item purple"><span class="action-num">10</span> Check status tracker -- 3-step progress indicator</div>
+            <div class="action-item purple"><span class="action-num">11</span> See status advance from "Submitted" to "Under Review"</div>
+          </td>
+          <td class="cell">
+            <div class="action-item green"><span class="action-num">12</span> Receive resolution notification</div>
+            <div class="action-item green"><span class="action-num">13</span> Read plain-language ruling with explanation</div>
+            <div class="action-item green"><span class="action-num">14</span> See outcome: Upheld or Overturned</div>
+          </td>
+        </tr>
+
+        <!-- Touchpoints -->
+        <tr>
+          <td class="row-label">Touchpoints<div class="sublabel">Customer surfaces</div></td>
+          <td class="cell">
+            <span class="touchpoint tp-ext">Email / SMS Notification</span>
+            <span class="touchpoint tp-ui">Customer Portal</span>
+          </td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Decision Explanation</span>
+            <span class="touchpoint tp-ai">AI-Generated Customer Summary</span>
+          </td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Contest Form</span>
+            <span class="touchpoint tp-ui">"I Disagree" Button</span>
+            <span class="touchpoint tp-ui">File Upload</span>
+          </td>
+          <td class="cell">
+            <span class="touchpoint tp-ui">Contest Status Tracker</span>
+            <span class="touchpoint tp-ui">3-Step Progress Bar</span>
+          </td>
+          <td class="cell">
+            <span class="touchpoint tp-ext">Resolution Notification</span>
+            <span class="touchpoint tp-ui">Ruling Panel</span>
+          </td>
+        </tr>
+
+        <!-- Thinking -->
+        <tr>
+          <td class="row-label">Thinking<div class="sublabel">Internal thoughts</div></td>
+          <td class="cell">
+            <div class="thought">"I thought my vehicle was covered -- what happened?"</div>
+          </td>
+          <td class="cell">
+            <div class="thought">"8.5 labor hours vs. a 2.0-hour limit -- okay, I see the specific reason."</div>
+            <div class="thought">"But my situation was different -- I have a report that proves it."</div>
+          </td>
+          <td class="cell">
+            <div class="thought">"Is this actually going to be reviewed, or is this a dead end?"</div>
+            <div class="thought">"The form is simple -- I can upload my diagnostic report."</div>
+          </td>
+          <td class="cell">
+            <div class="thought">"Has anyone looked at my case yet?"</div>
+            <div class="thought">"Good -- the tracker moved to 'Under Review'."</div>
+          </td>
+          <td class="cell">
+            <div class="thought">"They overturned it -- the diagnostic report made the difference."</div>
+            <div class="thought">"Even if it wasn't overturned, at least I understand why."</div>
+          </td>
+        </tr>
+
+        <!-- Feeling -->
+        <tr>
+          <td class="row-label">Feeling<div class="sublabel">Emotional state</div></td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--red-400)"></span>
+              <span class="emotion-text">Anxious -- unexpected denial</span>
+              <span class="emotion-level level-low"></span>
+            </div>
+          </td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--amber-500)"></span>
+              <span class="emotion-text">Processing -- at least the reason is clear</span>
+              <span class="emotion-level level-mid"></span>
+            </div>
+          </td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--amber-500)"></span>
+              <span class="emotion-text">Hopeful -- there is a real path to push back</span>
+              <span class="emotion-level level-mid"></span>
+            </div>
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--green-500)"></span>
+              <span class="emotion-text">Relieved -- submission confirmed immediately</span>
+              <span class="emotion-level level-high"></span>
+            </div>
+          </td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--amber-500)"></span>
+              <span class="emotion-text">Patient -- tracker shows progress</span>
+              <span class="emotion-level level-mid"></span>
+            </div>
+          </td>
+          <td class="cell">
+            <div class="emotion-bar">
+              <span class="emotion-dot" style="background:var(--green-500)"></span>
+              <span class="emotion-text">Respected -- the system took my case seriously</span>
+              <span class="emotion-level level-high"></span>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Pain Points & Opportunities -->
+        <tr>
+          <td class="row-label">Pain Points &amp; Opportunities</td>
+          <td class="cell">
+            <div class="pain pain-point">Denial feels arbitrary when the notification lacks detail</div>
+            <div class="pain pain-opp">Notification links directly to a clear explanation page</div>
+          </td>
+          <td class="cell">
+            <div class="pain pain-point">Policy jargon ("R-10", "threshold violation") is meaningless to a customer</div>
+            <div class="pain pain-opp">Plain language with specific numbers builds understanding and trust</div>
+          </td>
+          <td class="cell">
+            <div class="pain pain-point">Contest path feels designed to discourage if hard to find</div>
+            <div class="pain pain-opp">"I disagree" button is visible, form is simple, confirmation is immediate</div>
+          </td>
+          <td class="cell">
+            <div class="pain pain-point">Silence after submission erodes trust -- "did anyone see this?"</div>
+            <div class="pain pain-opp">3-step status tracker advances in real time</div>
+          </td>
+          <td class="cell">
+            <div class="pain pain-point">Rulings that arrive without explanation feel predetermined</div>
+            <div class="pain pain-opp">Plain-language ruling -- even upheld -- explains what was considered</div>
+          </td>
+        </tr>
+
+        <!-- Components -->
+        <tr>
+          <td class="row-label">Components<div class="sublabel">Customer-facing</div></td>
+          <td class="cell">
+            <span class="comp-tag">CustomerPortal</span>
+          </td>
+          <td class="cell">
+            <span class="comp-tag">CustomerPortal</span>
+            <span class="comp-tag">AI Explanation Agent</span>
+          </td>
+          <td class="cell">
+            <span class="comp-tag">ContestForm</span>
+          </td>
+          <td class="cell">
+            <span class="comp-tag">ContestStatusTracker</span>
+          </td>
+          <td class="cell">
+            <span class="comp-tag">Resolution Notification</span>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         PERSONA COMPARISON
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <div class="comparison">
+      <h3>Persona Comparison at a Glance</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:20%"></th>
+            <th style="width:27%">Warranty Analyst</th>
+            <th style="width:27%">Claims Ops Manager</th>
+            <th style="width:27%">Customer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Primary goal</strong></td>
+            <td>Close claims accurately and fast</td>
+            <td>Detect leakage patterns and report results</td>
+            <td>Understand the decision and contest if needed</td>
+          </tr>
+          <tr>
+            <td><strong>Primary surface</strong></td>
+            <td>Claim queue + claim detail</td>
+            <td>Anomaly tab + savings counter</td>
+            <td>Customer portal</td>
+          </tr>
+          <tr>
+            <td><strong>Relationship with AI</strong></td>
+            <td>Trusts it when it's specific; verifies before acting</td>
+            <td>Trusts patterns; sceptical of individual scores</td>
+            <td>Unaware of AI; experiences only the output</td>
+          </tr>
+          <tr>
+            <td><strong>Decision authority</strong></td>
+            <td>Full -- Approve / Escalate / Reject / Overturn</td>
+            <td>None -- observes, assigns, reports</td>
+            <td>None -- submits and waits</td>
+          </tr>
+          <tr>
+            <td><strong>Trust is built by</strong></td>
+            <td>Specificity, explainability, stable UI</td>
+            <td>Pattern language, live metrics, anomaly precision</td>
+            <td>Plain language, contest visibility, tracker accuracy</td>
+          </tr>
+          <tr>
+            <td><strong>Trust is broken by</strong></td>
+            <td>Vague output, unpredictable errors</td>
+            <td>High false positive rate, metric inconsistency</td>
+            <td>Boilerplate denials, no response, unexplained rulings</td>
+          </tr>
+          <tr>
+            <td><strong>Interaction frequency</strong></td>
+            <td>High -- daily, all-day queue work</td>
+            <td>Low to medium -- monitoring and spot checks</td>
+            <td>One-time or rare -- per claim lifecycle</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item"><div class="ldot" style="background:var(--blue-500)"></div> UI Touchpoint</div>
+      <div class="legend-item"><div class="ldot" style="background:var(--purple-500)"></div> AI Agent Touchpoint</div>
+      <div class="legend-item"><div class="ldot" style="background:var(--green-500)"></div> Data Source</div>
+      <div class="legend-item"><div class="ldot" style="background:var(--amber-500)"></div> External Channel</div>
+      <div class="legend-item"><div class="ldot" style="background:var(--red-400)"></div> Pain Point</div>
+      <div class="legend-item"><div class="ldot" style="background:var(--green-400)"></div> Opportunity</div>
+    </div>
+
+  </div>
+
+</body>
+</html>
