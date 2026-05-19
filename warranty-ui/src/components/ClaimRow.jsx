@@ -1,4 +1,4 @@
-export default function ClaimRow({ claim, status, decision, onSelect, onDecision }) {
+export default function ClaimRow({ claim, status, decision, contestStatus, isLoading, onSelect, onDecision }) {
   const formatDate = (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00')
     return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`
@@ -11,6 +11,7 @@ export default function ClaimRow({ claim, status, decision, onSelect, onDecision
     Clean: 'bg-status-clean-tint text-status-clean border-status-clean-border',
     Flagged: 'bg-status-flagged-tint text-status-flagged border-status-flagged-border',
     Anomaly: 'bg-status-anomaly-tint text-status-anomaly border-status-anomaly-border',
+    Contested: 'bg-orange-100 text-orange-700 border-orange-200',
   }
 
   const decisionBadge = {
@@ -54,7 +55,11 @@ export default function ClaimRow({ claim, status, decision, onSelect, onDecision
         </span>
       </td>
       <td className="px-4 py-3">
-        {decision ? (
+        {isLoading ? (
+          <span className="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border bg-toyota-50 text-toyota-400 border-toyota-200 animate-pulse">
+            Analysing…
+          </span>
+        ) : decision ? (
           <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border ${decisionBadge[decision]}`}>
             {decision}
           </span>
@@ -62,6 +67,15 @@ export default function ClaimRow({ claim, status, decision, onSelect, onDecision
           <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border ${statusBadge[status]}`}>
             {status}
           </span>
+        )}
+      </td>
+      <td className="px-4 py-3">
+        {contestStatus && contestStatus !== 'none' ? (
+          <span className="bg-orange-100 text-orange-800 text-xs font-semibold px-3 py-1 rounded-full capitalize">
+            {contestStatus.replace('_', ' ')}
+          </span>
+        ) : (
+          <span className="text-gray-300 text-xs">—</span>
         )}
       </td>
       <td className="px-4 py-3">

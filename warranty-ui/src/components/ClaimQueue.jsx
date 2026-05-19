@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import ClaimRow from './ClaimRow'
 
-export default function ClaimQueue({ claims, decisions, agentResults, onSelectClaim, onDecision }) {
+export default function ClaimQueue({ claims, decisions, agentResults, contestData, isLoading, onSelectClaim, onDecision }) {
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
 
   const getStatus = (claim) => {
-    if (!agentResults[claim.claimId]) {
+    if (contestData?.[claim.claimId]?.status && contestData[claim.claimId].status !== 'none') {
+      return 'Contested'
+    }
+    if (!agentResults?.[claim.claimId]) {
       if (claim.groundTruth === 'violation') return 'Flagged'
       if (claim.groundTruth === 'anomaly') return 'Anomaly'
       return 'Clean'
@@ -20,6 +23,7 @@ export default function ClaimQueue({ claims, decisions, agentResults, onSelectCl
   const filtered = claims
     .filter(c => {
       if (filter === 'all') return true
+      if (filter === 'escalated') return decisions[c.claimId] === 'escalate'
       const status = getStatus(c).toLowerCase()
       return status === filter
     })
@@ -29,19 +33,21 @@ export default function ClaimQueue({ claims, decisions, agentResults, onSelectCl
       return c.claimId.toLowerCase().includes(s) || c.dealerId.toLowerCase().includes(s)
     })
     .sort((a, b) => {
-      const priority = { Flagged: 0, Anomaly: 1, Clean: 2 }
+      const priority = { Flagged: 0, Anomaly: 1, Contested: 1.5, Clean: 2 }
       const pA = priority[getStatus(a)] ?? 2
       const pB = priority[getStatus(b)] ?? 2
       if (pA !== pB) return pA - pB
       return b.claimAmount - a.claimAmount
     })
 
-  const tabs = ['all', 'flagged', 'anomaly', 'clean']
+  const tabs = ['all', 'flagged', 'anomaly', 'clean', 'escalated', 'contested']
   const counts = {
     all: claims.length,
     flagged: claims.filter(c => getStatus(c) === 'Flagged').length,
     anomaly: claims.filter(c => getStatus(c) === 'Anomaly').length,
     clean: claims.filter(c => getStatus(c) === 'Clean').length,
+    escalated: claims.filter(c => decisions[c.claimId] === 'escalate').length,
+    contested: claims.filter(c => getStatus(c) === 'Contested').length,
   }
 
   return (
@@ -90,6 +96,7 @@ export default function ClaimQueue({ claims, decisions, agentResults, onSelectCl
               <th className="px-4 py-3 text-right">Amount</th>
               <th className="px-4 py-3">Warranty</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Contest</th>
               <th className="px-4 py-3">Action</th>
             </tr>
           </thead>
@@ -100,12 +107,19 @@ export default function ClaimQueue({ claims, decisions, agentResults, onSelectCl
                 claim={claim}
                 status={getStatus(claim)}
                 decision={decisions[claim.claimId]}
+                contestStatus={contestData?.[claim.claimId]?.status}
+                isLoading={isLoading?.[claim.claimId]}
                 onSelect={() => onSelectClaim(claim.claimId)}
                 onDecision={onDecision}
               />
             ))}
           </tbody>
         </table>
+        {filtered.length === 0 && (
+          <div className="text-center py-12 text-gray-400 text-sm">
+            All claims reviewed
+          </div>
+        )}
       </div>
     </div>
   )

@@ -11,6 +11,8 @@ import ReportsView from './components/ReportsView'
 import RulesView from './components/RulesView'
 import CommandPalette from './components/CommandPalette'
 import { useNotifications } from './components/NotificationsPopover'
+import CustomerPortal from './components/CustomerPortal'
+import SpecialistWorkspace from './components/SpecialistWorkspace'
 import { useAgents } from './useAgents'
 import claimsData from '../claims.json'
 import rulesData from '../rules.json'
@@ -24,6 +26,7 @@ function App() {
   const [activeDealerId, setActiveDealerId] = useState(null)
   const [decisions, setDecisions] = useState({})
   const [cmdkOpen, setCmdkOpen] = useState(false)
+  const [contestData, setContestData] = useState({})
 
   const notifications = useNotifications()
   const { agentResults, runAgents } = useAgents(claims, rulesData)
@@ -56,7 +59,46 @@ function App() {
 
   const handleDecision = (claimId, decision) => {
     setDecisions(prev => ({ ...prev, [claimId]: decision }))
-    setActiveClaimId(null)
+    // Auto-advance: select next flagged/anomaly claim (J1 blueprint: "Next claim auto-selected")
+    const getStatus = (c) => {
+      if (agentResults[c.claimId]?.validation?.overallSeverity === 'high') return 'flagged'
+      if (agentResults[c.claimId]?.validation?.overallSeverity === 'medium') return 'anomaly'
+      if (c.groundTruth === 'violation') return 'flagged'
+      if (c.groundTruth === 'anomaly') return 'anomaly'
+      return 'clean'
+    }
+    const nextClaim = claims.find(c =>
+      c.claimId !== claimId &&
+      !decisions[c.claimId] && // not already decided
+      (getStatus(c) === 'flagged' || getStatus(c) === 'anomaly')
+    )
+    if (nextClaim) {
+      setActiveClaimId(nextClaim.claimId)
+      if (!agentResults[nextClaim.claimId]) runAgents(nextClaim)
+    } else {
+      setActiveClaimId(null)
+    }
+  }
+
+  const handleContestSubmit = (claimId, reason, evidence) => {
+    setContestData(prev => ({
+      ...prev,
+      [claimId]: { status: 'submitted', reason, evidence, resolution: null }
+    }))
+    // Simulate agent re-validation after short delay
+    setTimeout(() => {
+      setContestData(prev => ({
+        ...prev,
+        [claimId]: { ...prev[claimId], status: 'under_review' }
+      }))
+    }, 2000)
+  }
+
+  const handleResolve = (claimId, outcome, notes) => {
+    setContestData(prev => ({
+      ...prev,
+      [claimId]: { ...prev[claimId], status: 'resolved', resolution: notes, outcome }
+    }))
   }
 
   const handleNavigate = (target) => {
@@ -114,6 +156,24 @@ function App() {
         <ReportsView claims={claims} rules={rulesData} agentResults={agentResults} decisions={decisions} />
       ) : view === 'rules' ? (
         <RulesView claims={claims} rules={rulesData} role={role} />
+      ) : view === 'customer' ? (
+        <CustomerPortal
+          claims={claims}
+          decisions={decisions}
+          agentResults={agentResults}
+          contestData={contestData}
+          onContestSubmit={handleContestSubmit}
+          rules={rulesData}
+        />
+      ) : view === 'specialist' ? (
+        <SpecialistWorkspace
+          claims={claims}
+          decisions={decisions}
+          agentResults={agentResults}
+          contestData={contestData}
+          rules={rulesData}
+          onResolve={handleResolve}
+        />
       ) : activeClaim ? (
         <ClaimDetail
           claim={activeClaim}
@@ -143,6 +203,7 @@ function App() {
           claims={claims}
           decisions={decisions}
           agentResults={agentResults}
+          contestData={contestData}
           onSelectClaim={handleSelectClaim}
           onDecision={handleDecision}
         />
@@ -160,7 +221,7 @@ function App() {
   )
 }
 
-function ReviewerHome({ claims, decisions, agentResults, onSelectClaim, onDecision }) {
+function ReviewerHome({ claims, decisions, agentResults, contestData, onSelectClaim, onDecision }) {
   const reviewed = Object.values(decisions).filter(Boolean).length
   const rejectedFlagged = claims.filter(
     c => decisions[c.claimId] === 'reject' && (c.groundTruth === 'violation' || c.groundTruth === 'anomaly')
@@ -193,6 +254,7 @@ function ReviewerHome({ claims, decisions, agentResults, onSelectClaim, onDecisi
         claims={claims}
         decisions={decisions}
         agentResults={agentResults}
+        contestData={contestData}
         onSelectClaim={onSelectClaim}
         onDecision={onDecision}
       />
