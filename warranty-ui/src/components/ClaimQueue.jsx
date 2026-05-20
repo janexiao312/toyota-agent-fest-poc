@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ClaimRow from './ClaimRow'
 
-export default function ClaimQueue({ claims, decisions, agentResults, contestData, isLoading, onSelectClaim, onDecision }) {
+export default function ClaimQueue({ claims, decisions, reviewerNotes, agentResults, contestData, isLoading, lastDecisionId, onSelectClaim, onDecision, onUndoDecision }) {
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
 
@@ -59,7 +59,7 @@ export default function ClaimQueue({ claims, decisions, agentResults, contestDat
         </p>
       </div>
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
         {tabs.map(tab => (
           <button
             key={tab}
@@ -76,13 +76,24 @@ export default function ClaimQueue({ claims, decisions, agentResults, contestDat
             </span>
           </button>
         ))}
-        <input
-          type="text"
-          placeholder="Search by Claim ID or Dealer…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="ml-auto px-3 py-2 bg-white border border-toyota-200 rounded-md text-sm w-72 placeholder:text-toyota-400 focus:outline-none focus:border-toyota-red focus:ring-1 focus:ring-toyota-red"
-        />
+        <div className="ml-auto flex items-center gap-2">
+          {lastDecisionId && decisions[lastDecisionId] && (
+            <button
+              onClick={() => onUndoDecision?.(lastDecisionId)}
+              title={`Undo decision on ${lastDecisionId}`}
+              className="px-3 py-2 text-sm font-medium text-toyota-700 bg-white border border-toyota-200 hover:border-toyota-ink hover:text-toyota-ink rounded-md transition-colors flex items-center gap-1.5"
+            >
+              <span aria-hidden>↩</span> Undo {lastDecisionId}
+            </button>
+          )}
+          <input
+            type="text"
+            placeholder="Search by Claim ID or Dealer…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="px-3 py-2 bg-white border border-toyota-200 rounded-md text-sm w-72 placeholder:text-toyota-400 focus:outline-none focus:border-toyota-red focus:ring-1 focus:ring-toyota-red"
+          />
+        </div>
       </div>
 
       <div className="bg-white border border-toyota-200 rounded-lg overflow-hidden">
@@ -107,6 +118,7 @@ export default function ClaimQueue({ claims, decisions, agentResults, contestDat
                 claim={claim}
                 status={getStatus(claim)}
                 decision={decisions[claim.claimId]}
+                reviewerNote={reviewerNotes?.[claim.claimId]}
                 contestStatus={contestData?.[claim.claimId]?.status}
                 isLoading={isLoading?.[claim.claimId]}
                 onSelect={() => onSelectClaim(claim.claimId)}

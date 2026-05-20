@@ -1,7 +1,8 @@
 import { getStatus, getDealerStats, getStatusMix, getWarrantyMix } from '../claimsStore'
 import MetricsStrip from './MetricsStrip'
+import AgentPromptCard from './AgentPromptCard'
 
-export default function ManagerDashboard({ claims, decisions, agentResults, onSelectClaim }) {
+export default function ManagerDashboard({ claims, decisions, agentResults, onSelectClaim, onJumpToDealer }) {
   const totalClaims = claims.length
   const mix = getStatusMix(claims, agentResults)
   const warrantyMix = getWarrantyMix(claims)
@@ -37,6 +38,13 @@ export default function ManagerDashboard({ claims, decisions, agentResults, onSe
       />
 
       <div className="max-w-[1400px] mx-auto px-6 py-8">
+        <AgentPromptCard
+          role="manager"
+          claims={claims}
+          decisions={decisions}
+          agentResults={agentResults}
+          onJumpToDealer={onJumpToDealer}
+        />
         <div className="mb-6">
           <h2 className="text-2xl font-semibold text-toyota-ink tracking-tight">Regional Overview</h2>
           <p className="text-sm text-toyota-500 mt-1">
@@ -55,10 +63,15 @@ export default function ManagerDashboard({ claims, decisions, agentResults, onSe
             </div>
           </Card>
 
-          <Card title="Dealer Flag-Rate Leaderboard" subtitle="Top 5 dealers by share of flagged + anomalous claims">
-            <div className="space-y-3 mt-1">
+          <Card title="Dealer Flag-Rate Leaderboard" subtitle="Top 5 dealers by share of flagged + anomalous claims. Click a row to open the dealer case file.">
+            <div className="space-y-1 mt-1">
               {dealerStats.map(d => (
-                <div key={d.dealerId} className="grid grid-cols-[80px_1fr_70px] items-center gap-3 text-sm">
+                <button
+                  key={d.dealerId}
+                  onClick={() => onJumpToDealer?.(d.dealerId)}
+                  disabled={!onJumpToDealer}
+                  className="w-full grid grid-cols-[80px_1fr_70px] items-center gap-3 text-sm py-2 px-2 -mx-2 rounded hover:bg-toyota-50 disabled:hover:bg-transparent disabled:cursor-default transition-colors text-left"
+                >
                   <span className="font-mono text-toyota-700">{d.dealerId}</span>
                   <div className="h-2 bg-toyota-100 rounded-sm overflow-hidden">
                     <div className="h-full bg-toyota-red" style={{ width: `${Math.round(d.flagRate * 100)}%` }} />
@@ -66,7 +79,7 @@ export default function ManagerDashboard({ claims, decisions, agentResults, onSe
                   <span className="text-right font-semibold tabular-nums text-toyota-ink">
                     {Math.round(d.flagRate * 100)}%
                   </span>
-                </div>
+                </button>
               ))}
             </div>
           </Card>
