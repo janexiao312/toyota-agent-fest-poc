@@ -1,28 +1,86 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
-import SavingsCounter from './components/SavingsCounter'
+import LoginScreen from './components/LoginScreen'
+import NavBar from './components/NavBar'
+import MetricsStrip from './components/MetricsStrip'
 import ClaimQueue from './components/ClaimQueue'
 import ClaimDetail from './components/ClaimDetail'
+import ProfileManager from './components/ProfileManager'
+import ManagerDashboard from './components/ManagerDashboard'
+import InvestigatorView from './components/InvestigatorView'
+import ReportsView from './components/ReportsView'
+import RulesView from './components/RulesView'
+import CommandPalette from './components/CommandPalette'
+import { useNotifications } from './components/NotificationsPopover'
 import CustomerPortal from './components/CustomerPortal'
 import SpecialistWorkspace from './components/SpecialistWorkspace'
-import LandingPage from './components/LandingPage'
+import AgentPromptCard from './components/AgentPromptCard'
 import { useAgents } from './useAgents'
 import claimsData from '../claims.json'
 import rulesData from '../rules.json'
 
-function SpecialistRoute() {
-  const navigate = useNavigate()
-  const [claims, setClaims] = useState([])
-  const [activeClaimId, setActiveClaimId] = useState(null)
-  const [decisions, setDecisions] = useState({})
-  const [activeView, setActiveView] = useState('reviewer')
-  const [contestData, setContestData] = useState({})
+const ROLE_USERS = {
+  reviewer: { name: 'Jordan Diaz', role: 'Warranty Reviewer' },
+  manager: { name: 'Morgan Pierce', role: 'Regional Manager' },
+  investigator: { name: 'Priya Shah', role: 'Compliance Investigator' },
+  specialist: { name: 'Alex Tran', role: 'Resolution Specialist' },
+  customer: { name: 'Sam Carter', role: 'Vehicle Owner' },
+}
 
-  const { agentResults, isLoading, runAgents } = useAgents(claims, rulesData)
+const DEALER_NOTES_STORAGE_KEY = 'warranty-ui:dealer-notes:v1'
+
+function loadDealerNotes() {
+  try {
+    const raw = localStorage.getItem(DEALER_NOTES_STORAGE_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
+function App() {
+  const [authed, setAuthed] = useState(false)
+  const [view, setView] = useState('queue')
+  const [role, setRole] = useState('reviewer')
+  const [claims] = useState(claimsData)
+  const [activeClaimId, setActiveClaimId] = useState(null)
+  const [activeDealerId, setActiveDealerId] = useState(null)
+  const [decisions, setDecisions] = useState({})
+  const [reviewerNotes, setReviewerNotes] = useState({})
+  const [dealerNotes, setDealerNotes] = useState(() => loadDealerNotes())
+  const [lastDecisionId, setLastDecisionId] = useState(null)
+  const [cmdkOpen, setCmdkOpen] = useState(false)
+  const [contestData, setContestData] = useState({})
+  const [toast, setToast] = useState(null)
+
+  const notifications = useNotifications()
+  const { agentResults, runAgents } = useAgents(claims, rulesData)
+  const currentUser = ROLE_USERS[role] ?? ROLE_USERS.reviewer
 
   useEffect(() => {
-    setClaims(claimsData)
-  }, [])
+    try {
+      localStorage.setItem(DEALER_NOTES_STORAGE_KEY, JSON.stringify(dealerNotes))
+    } catch {
+      // ignore quota / private-mode errors
+    }
+  }, [dealerNotes])
+
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 3500)
+    return () => clearTimeout(t)
+  }, [toast])
+
+  useEffect(() => {
+    if (!authed) return
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setCmdkOpen(o => !o)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [authed])
 
   const activeClaim = claims.find(c => c.claimId === activeClaimId)
 
@@ -34,8 +92,22 @@ function SpecialistRoute() {
     }
   }
 
-  const handleDecision = (claimId, decision) => {
+  const handleDecision = (claimId, decision, note) => {
     setDecisions(prev => ({ ...prev, [claimId]: decision }))
+    if (note?.trim()) {
+      setReviewerNotes(prev => ({ ...prev, [claimId]: note.trim() }))
+    } else {
+      setReviewerNotes(prev => {
+        if (!(claimId in prev)) return prev
+        const next = { ...prev }
+        delete next[claimId]
+        return next
+      })
+    }
+    setLastDecisionId(claimId)
+    setToast({ kind: 'decision', claimId, decision, undoable: true })
+
+    // Auto-advance only from the queue (not when reviewing detail with a note attached)
     const getStatus = (c) => {
       if (agentResults[c.claimId]?.validation?.overallSeverity === 'high') return 'flagged'
       if (agentResults[c.claimId]?.validation?.overallSeverity === 'medium') return 'anomaly'
@@ -56,10 +128,37 @@ function SpecialistRoute() {
     }
   }
 
-  const handleContestSubmit = (claimId, reason, evidence) => {
+  const handleUndoDecision = (claimId) => {
+    const target = claimId ?? lastDecisionId
+    if (!target) return
+    setDecisions(prev => {
+      if (!(target in prev)) return prev
+      const next = { ...prev }
+      delete next[target]
+      return next
+    })
+    setReviewerNotes(prev => {
+      if (!(target in prev)) return prev
+      const next = { ...prev }
+      delete next[target]
+      return next
+    })
+    setLastDecisionId(null)
+    setToast({ kind: 'info', text: `Decision on ${target} undone` })
+  }
+
+  const handleContestSubmit = (claimId, payload) => {
+    const { reason, evidence = [], context = '' } = payload ?? {}
     setContestData(prev => ({
       ...prev,
-      [claimId]: { status: 'submitted', reason, evidence, resolution: null }
+      [claimId]: {
+        status: 'submitted',
+        reason,
+        evidence,
+        context,
+        resolution: null,
+        submittedAt: new Date().toISOString(),
+      }
     }))
     setTimeout(() => {
       setContestData(prev => ({
@@ -67,190 +166,302 @@ function SpecialistRoute() {
         [claimId]: { ...prev[claimId], status: 'under_review' }
       }))
     }, 2000)
+  }
+
+  const handleWithdrawContest = (claimId) => {
+    setContestData(prev => {
+      if (!(claimId in prev)) return prev
+      const next = { ...prev }
+      delete next[claimId]
+      return next
+    })
+    setToast({ kind: 'info', text: `Contest on ${claimId} withdrawn` })
   }
 
   const handleResolve = (claimId, outcome, notes) => {
     setContestData(prev => ({
       ...prev,
-      [claimId]: { ...prev[claimId], status: 'resolved', resolution: notes, outcome }
+      [claimId]: {
+        ...prev[claimId],
+        status: 'resolved',
+        resolution: notes,
+        outcome,
+        resolvedBy: currentUser.name,
+        resolverRole: currentUser.role,
+        resolvedAt: new Date().toISOString(),
+      }
     }))
+    setToast({ kind: 'info', text: `Resolution issued: ${outcome.toUpperCase()}` })
+  }
+
+  const handleRequestMoreInfo = (claimId, question) => {
+    setContestData(prev => ({
+      ...prev,
+      [claimId]: {
+        ...prev[claimId],
+        status: 'needs_info',
+        infoRequest: {
+          question,
+          requestedBy: currentUser.name,
+          requestedAt: new Date().toISOString(),
+          response: null,
+          respondedAt: null,
+        },
+      }
+    }))
+    setToast({ kind: 'info', text: 'Information request sent to customer' })
+  }
+
+  const handleSubmitInfoResponse = (claimId, response) => {
+    setContestData(prev => {
+      const existing = prev[claimId]
+      if (!existing?.infoRequest) return prev
+      return {
+        ...prev,
+        [claimId]: {
+          ...existing,
+          status: 'under_review',
+          infoRequest: {
+            ...existing.infoRequest,
+            response,
+            respondedAt: new Date().toISOString(),
+          },
+        }
+      }
+    })
+    setToast({ kind: 'info', text: 'Response sent — specialist will continue review' })
+  }
+
+  const handleSaveDealerNote = (dealerId, note) => {
+    setDealerNotes(prev => {
+      if (!note?.trim()) {
+        if (!(dealerId in prev)) return prev
+        const next = { ...prev }
+        delete next[dealerId]
+        return next
+      }
+      return {
+        ...prev,
+        [dealerId]: {
+          text: note.trim(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: currentUser.name,
+        }
+      }
+    })
+  }
+
+  const handleNavigate = (target) => {
+    setActiveClaimId(null)
+    setActiveDealerId(null)
+    setView(target)
+  }
+
+  const handleSignOut = () => {
+    setAuthed(false)
+    setActiveClaimId(null)
+    setActiveDealerId(null)
+    setView('queue')
+  }
+
+  const handleChangeRole = (newRole) => {
+    setRole(newRole)
+    setActiveClaimId(null)
+    setActiveDealerId(null)
+    setView('queue')
+  }
+
+  const handleJumpToDealer = (dealerId) => {
+    setRole('investigator')
+    setView('queue')
+    setActiveClaimId(null)
+    setActiveDealerId(dealerId)
+  }
+
+  if (!authed) {
+    return <LoginScreen onSignIn={() => setAuthed(true)} />
   }
 
   return (
-    <div className="bg-toyota-50 min-h-screen">
-      {/* Red stripe */}
-      <div className="h-1 bg-toyota-red" />
+    <div className="bg-toyota-50 min-h-screen text-toyota-ink">
+      <NavBar
+        currentView={view}
+        onNavigate={handleNavigate}
+        role={role}
+        onChangeRole={handleChangeRole}
+        onSignOut={handleSignOut}
+        notifications={notifications}
+        onSelectClaim={handleSelectClaim}
+        onOpenCmdk={() => setCmdkOpen(true)}
+      />
 
-      {/* App nav bar */}
-      <header className="bg-white border-b border-toyota-200">
-        <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center gap-8">
-          {/* Logo + label */}
-          <button onClick={() => navigate('/')} className="flex items-center shrink-0 group" title="Back to Home">
-            <svg viewBox="74.262 74.262 300 224.776" xmlns="http://www.w3.org/2000/svg" className="h-7 w-auto" aria-label="Toyota">
-              <rect x="74.7" y="74.7" fill="#EB0A1E" width="224" height="224"/>
-              <path fill="#FFFFFF" d="M224,137.8c-10.4-3.3-23.3-5.3-37.4-5.3c-14,0-27,2-37.4,5.3c-27.6,8.9-46.6,27.3-46.6,48.7 c0,30,37.6,54.3,84,54.3c46.4,0,84-24.3,84-54.3C270.7,165.2,251.7,146.7,224,137.8 M186.7,217.5c-6.9,0-12.6-13.6-12.9-30.7 c4.2,0.4,8.5,0.6,12.9,0.6c4.4,0,8.7-0.2,12.9-0.6C199.2,203.9,193.6,217.5,186.7,217.5 M174.6,173.4c1.9-12,6.6-20.5,12-20.5 c5.5,0,10.1,8.5,12,20.5c-3.8,0.3-7.9,0.5-12,0.5C182.5,173.9,178.5,173.7,174.6,173.4 M206.1,172.5c-2.8-18.8-10.4-32.4-19.4-32.4 c-9,0-16.6,13.5-19.4,32.4c-17.1-2.7-29-8.7-29-15.8c0-9.5,21.7-17.2,48.4-17.2c26.7,0,48.4,7.7,48.4,17.2 C235,163.7,223.1,169.8,206.1,172.5 M114.9,184.5c0-9.2,3.5-17.8,9.7-25.2c-0.1,0.5-0.1,1-0.1,1.6c0,11.6,17.4,21.4,41.6,25 c0,0.9,0,1.8,0,2.6c0,21.5,6,39.7,14.2,46C143.7,232.3,114.9,210.7,114.9,184.5 M193,234.5c8.2-6.3,14.2-24.5,14.2-46 c0-0.9,0-1.8,0-2.6c24.2-3.6,41.6-13.5,41.6-25c0-0.5,0-1-0.1-1.6c6.2,7.4,9.7,16,9.7,25.2C258.4,210.7,229.6,232.3,193,234.5"/>
-            </svg>
-            <span className="ml-3 pl-3 border-l border-toyota-300 text-toyota-ink font-semibold text-sm">
-              Warranty Reviewer
-            </span>
-          </button>
-
-          {/* Nav tabs */}
-          <nav className="flex items-center gap-1 text-sm font-medium">
-            {['reviewer', 'specialist'].map(view => (
-              <button
-                key={view}
-                onClick={() => setActiveView(view)}
-                className={`px-3 py-1.5 rounded-md transition-all ${
-                  activeView === view
-                    ? 'text-toyota-ink bg-toyota-100'
-                    : 'text-toyota-600 hover:text-toyota-ink'
-                }`}
-              >
-                {view === 'reviewer' ? 'Queue' : 'Specialist'}
-              </button>
-            ))}
-          </nav>
-
-          <div className="flex-1" />
-
-          {/* Profile chip */}
-          <div className="ml-auto pl-3 border-l border-toyota-200 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-toyota-ink text-white text-sm font-semibold flex items-center justify-center">JD</div>
-            <div className="leading-tight text-left hidden sm:block">
-              <div className="text-sm font-semibold text-toyota-ink">Jordan Diaz</div>
-              <div className="text-[11px] text-toyota-500">Senior Reviewer</div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Reviewer view */}
-      {activeView === 'reviewer' && (
-        <>
-          <SavingsCounter claims={claims} decisions={decisions} />
-          {activeClaimId && activeClaim ? (
-            <ClaimDetail
-              claim={activeClaim}
-              rules={rulesData}
-              agentResults={agentResults[activeClaimId]}
-              onDecision={handleDecision}
-              onBack={() => setActiveClaimId(null)}
-            />
-          ) : (
-            <ClaimQueue
-              claims={claims}
-              decisions={decisions}
-              agentResults={agentResults}
-              contestData={contestData}
-              isLoading={isLoading}
-              onSelectClaim={handleSelectClaim}
-              onDecision={handleDecision}
-            />
-          )}
-        </>
-      )}
-
-      {/* Specialist view */}
-      {activeView === 'specialist' && (
-        <SpecialistWorkspace
+      {view === 'settings' ? (
+        <ProfileManager
+          role={role}
+          onChangeRole={handleChangeRole}
+          onBack={() => setView('queue')}
+          onSignOut={handleSignOut}
+        />
+      ) : view === 'reports' ? (
+        <ReportsView claims={claims} rules={rulesData} agentResults={agentResults} decisions={decisions} />
+      ) : view === 'rules' ? (
+        <RulesView claims={claims} rules={rulesData} role={role} />
+      ) : view === 'customer' ? (
+        <CustomerPortal
           claims={claims}
           decisions={decisions}
           agentResults={agentResults}
           contestData={contestData}
-          rules={rulesData}
+          onContestSubmit={handleContestSubmit}
+          onWithdrawContest={handleWithdrawContest}
+          onSubmitInfoResponse={handleSubmitInfoResponse}
+        />
+      ) : view === 'specialist' ? (
+        <SpecialistWorkspace
+          claims={claims}
+          agentResults={agentResults}
+          contestData={contestData}
           onResolve={handleResolve}
+          onRequestMoreInfo={handleRequestMoreInfo}
+        />
+      ) : activeClaim ? (
+        <ClaimDetail
+          key={activeClaimId}
+          claim={activeClaim}
+          rules={rulesData}
+          agentResults={agentResults[activeClaimId]}
+          decision={decisions[activeClaimId]}
+          reviewerNote={reviewerNotes[activeClaimId]}
+          onDecision={handleDecision}
+          onUndoDecision={handleUndoDecision}
+          onBack={() => setActiveClaimId(null)}
+        />
+      ) : role === 'manager' ? (
+        <ManagerDashboard
+          claims={claims}
+          decisions={decisions}
+          agentResults={agentResults}
+          onSelectClaim={handleSelectClaim}
+          onJumpToDealer={handleJumpToDealer}
+        />
+      ) : role === 'investigator' ? (
+        <InvestigatorView
+          claims={claims}
+          agentResults={agentResults}
+          onSelectClaim={handleSelectClaim}
+          activeDealerId={activeDealerId}
+          onOpenDealer={setActiveDealerId}
+          onCloseDealer={() => setActiveDealerId(null)}
+          dealerNotes={dealerNotes}
+          onSaveDealerNote={handleSaveDealerNote}
+        />
+      ) : (
+        <ReviewerHome
+          claims={claims}
+          decisions={decisions}
+          reviewerNotes={reviewerNotes}
+          agentResults={agentResults}
+          contestData={contestData}
+          lastDecisionId={lastDecisionId}
+          onSelectClaim={handleSelectClaim}
+          onDecision={handleDecision}
+          onUndoDecision={handleUndoDecision}
         />
       )}
-    </div>
-  )
-}
 
-function CustomerRoute() {
-  const navigate = useNavigate()
-  const [claims, setClaims] = useState([])
-  const [decisions, setDecisions] = useState({})
-  const [contestData, setContestData] = useState({})
+      {toast && (
+        <Toast toast={toast} onUndo={handleUndoDecision} onDismiss={() => setToast(null)} />
+      )}
 
-  const { agentResults, runAgents } = useAgents(claims, rulesData)
-
-  useEffect(() => {
-    setClaims(claimsData)
-    // Pre-run agents on the demo claim (CLM-00005) so results are ready
-    const demoClaim = claimsData.find(c => c.claimId === 'CLM-00005')
-    if (demoClaim) {
-      // Small delay to ensure state is set
-      setTimeout(() => runAgents(demoClaim), 300)
-      // Simulate agent decision after processing
-      setTimeout(() => {
-        setDecisions(prev => ({ ...prev, 'CLM-00005': 'reject' }))
-      }, 4000)
-    }
-  }, [])
-
-  const handleContestSubmit = (claimId, reason, evidence) => {
-    setContestData(prev => ({
-      ...prev,
-      [claimId]: { status: 'submitted', reason, evidence, resolution: null }
-    }))
-    setTimeout(() => {
-      setContestData(prev => ({
-        ...prev,
-        [claimId]: { ...prev[claimId], status: 'under_review' }
-      }))
-    }, 2000)
-  }
-
-  return (
-    <div className="bg-toyota-50 min-h-screen">
-      {/* Red stripe */}
-      <div className="h-1 bg-toyota-red" />
-
-      {/* App nav bar */}
-      <header className="bg-white border-b border-toyota-200">
-        <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center gap-8">
-          <button onClick={() => navigate('/')} className="flex items-center shrink-0 group" title="Back to Home">
-            <svg viewBox="74.262 74.262 300 224.776" xmlns="http://www.w3.org/2000/svg" className="h-7 w-auto" aria-label="Toyota">
-              <rect x="74.7" y="74.7" fill="#EB0A1E" width="224" height="224"/>
-              <path fill="#FFFFFF" d="M224,137.8c-10.4-3.3-23.3-5.3-37.4-5.3c-14,0-27,2-37.4,5.3c-27.6,8.9-46.6,27.3-46.6,48.7 c0,30,37.6,54.3,84,54.3c46.4,0,84-24.3,84-54.3C270.7,165.2,251.7,146.7,224,137.8 M186.7,217.5c-6.9,0-12.6-13.6-12.9-30.7 c4.2,0.4,8.5,0.6,12.9,0.6c4.4,0,8.7-0.2,12.9-0.6C199.2,203.9,193.6,217.5,186.7,217.5 M174.6,173.4c1.9-12,6.6-20.5,12-20.5 c5.5,0,10.1,8.5,12,20.5c-3.8,0.3-7.9,0.5-12,0.5C182.5,173.9,178.5,173.7,174.6,173.4 M206.1,172.5c-2.8-18.8-10.4-32.4-19.4-32.4 c-9,0-16.6,13.5-19.4,32.4c-17.1-2.7-29-8.7-29-15.8c0-9.5,21.7-17.2,48.4-17.2c26.7,0,48.4,7.7,48.4,17.2 C235,163.7,223.1,169.8,206.1,172.5 M114.9,184.5c0-9.2,3.5-17.8,9.7-25.2c-0.1,0.5-0.1,1-0.1,1.6c0,11.6,17.4,21.4,41.6,25 c0,0.9,0,1.8,0,2.6c0,21.5,6,39.7,14.2,46C143.7,232.3,114.9,210.7,114.9,184.5 M193,234.5c8.2-6.3,14.2-24.5,14.2-46 c0-0.9,0-1.8,0-2.6c24.2-3.6,41.6-13.5,41.6-25c0-0.5,0-1-0.1-1.6c6.2,7.4,9.7,16,9.7,25.2C258.4,210.7,229.6,232.3,193,234.5"/>
-            </svg>
-            <span className="ml-3 pl-3 border-l border-toyota-300 text-toyota-ink font-semibold text-sm">
-              Customer Portal
-            </span>
-          </button>
-
-          <div className="flex-1" />
-
-          {/* Profile chip */}
-          <div className="ml-auto pl-3 border-l border-toyota-200 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-toyota-red-tint text-toyota-red text-sm font-semibold flex items-center justify-center">TK</div>
-            <div className="leading-tight text-left hidden sm:block">
-              <div className="text-sm font-semibold text-toyota-ink">Tom K.</div>
-              <div className="text-[11px] text-toyota-500">Vehicle Owner</div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <CustomerPortal
+      <CommandPalette
+        open={cmdkOpen}
         claims={claims}
-        decisions={decisions}
-        agentResults={agentResults}
-        contestData={contestData}
-        onContestSubmit={handleContestSubmit}
-        rules={rulesData}
+        onClose={() => setCmdkOpen(false)}
+        onSelectClaim={handleSelectClaim}
+        onNavigate={handleNavigate}
+        onJumpToDealer={handleJumpToDealer}
       />
     </div>
   )
 }
 
-function App() {
+function Toast({ toast, onUndo, onDismiss }) {
+  const isDecision = toast.kind === 'decision'
+  const label = isDecision
+    ? `${toast.claimId}: ${String(toast.decision).toUpperCase()}`
+    : toast.text
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/customer" element={<CustomerRoute />} />
-      <Route path="/specialist" element={<SpecialistRoute />} />
-    </Routes>
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-toyota-ink text-white rounded-lg shadow-lg px-4 py-3 flex items-center gap-4 min-w-[280px] animate-[fadeIn_150ms_ease-out]">
+      <span className="text-sm font-medium">{label}</span>
+      {isDecision && toast.undoable && (
+        <button
+          onClick={() => { onUndo(toast.claimId); onDismiss() }}
+          className="text-toyota-red text-xs font-semibold uppercase tracking-wider hover:text-white transition-colors"
+        >
+          Undo
+        </button>
+      )}
+      <button
+        onClick={onDismiss}
+        className="text-toyota-300 hover:text-white text-lg leading-none ml-auto"
+        aria-label="Dismiss"
+      >
+        ×
+      </button>
+    </div>
+  )
+}
+
+function ReviewerHome({ claims, decisions, reviewerNotes, agentResults, contestData, lastDecisionId, onSelectClaim, onDecision, onUndoDecision }) {
+  const reviewed = Object.values(decisions).filter(Boolean).length
+  const rejectedFlagged = claims.filter(
+    c => decisions[c.claimId] === 'reject' && (c.groundTruth === 'violation' || c.groundTruth === 'anomaly')
+  )
+  const flagsCaught = rejectedFlagged.length
+  const leakagePrevented = rejectedFlagged.reduce((sum, c) => sum + c.claimAmount, 0)
+  const totalFlaggedProcessed = claims.filter(
+    c => decisions[c.claimId] && (c.groundTruth === 'violation' || c.groundTruth === 'anomaly')
+  ).length
+  const accuracy = totalFlaggedProcessed > 0
+    ? Math.round((flagsCaught / totalFlaggedProcessed) * 100)
+    : 0
+
+  return (
+    <>
+      <MetricsStrip
+        contextLabel="My day · Dallas RO"
+        metrics={[
+          { label: 'Claims Reviewed', value: reviewed },
+          { label: 'Flags Caught', value: flagsCaught },
+          {
+            label: 'Leakage Prevented',
+            value: `$${leakagePrevented.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+            accent: true,
+          },
+          { label: 'Accuracy', value: `${accuracy}%` },
+        ]}
+      />
+      <div className="px-6 pt-6 max-w-[1400px] mx-auto">
+        <AgentPromptCard
+          role="reviewer"
+          claims={claims}
+          decisions={decisions}
+          agentResults={agentResults}
+          onSelectClaim={onSelectClaim}
+        />
+      </div>
+      <ClaimQueue
+        claims={claims}
+        decisions={decisions}
+        reviewerNotes={reviewerNotes}
+        agentResults={agentResults}
+        contestData={contestData}
+        lastDecisionId={lastDecisionId}
+        onSelectClaim={onSelectClaim}
+        onDecision={onDecision}
+        onUndoDecision={onUndoDecision}
+      />
+    </>
   )
 }
 

@@ -1,23 +1,27 @@
-export default function ActionBar({ claimId, onDecision }) {
+export default function ActionBar({ claimId, onDecision, disabled }) {
+  const baseDisabled = 'opacity-50 cursor-not-allowed'
   return (
-    <div className="flex gap-3 justify-end py-4 border-t border-gray-200 mt-4">
+    <div className="flex gap-3 justify-end py-5 border-t border-toyota-200 mt-6">
       <button
+        disabled={disabled}
         onClick={() => onDecision(claimId, 'approve')}
-        className="bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 px-4 py-2 rounded-lg font-medium"
+        className={`bg-white border border-status-clean-border text-status-clean hover:bg-status-clean-tint px-5 py-2.5 rounded-md text-sm font-semibold uppercase tracking-wider transition-colors ${disabled ? baseDisabled : ''}`}
       >
         Approve
       </button>
       <button
+        disabled={disabled}
         onClick={() => onDecision(claimId, 'escalate')}
-        className="bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 px-4 py-2 rounded-lg font-medium"
+        className={`bg-white border border-status-anomaly-border text-status-anomaly hover:bg-status-anomaly-tint px-5 py-2.5 rounded-md text-sm font-semibold uppercase tracking-wider transition-colors ${disabled ? baseDisabled : ''}`}
       >
         Escalate for Review
       </button>
       <button
+        disabled={disabled}
         onClick={() => onDecision(claimId, 'reject')}
-        className="bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 px-4 py-2 rounded-lg font-medium"
+        className={`bg-toyota-red text-white border border-toyota-red hover:bg-toyota-red-hover px-5 py-2.5 rounded-md text-sm font-semibold uppercase tracking-wider transition-colors ${disabled ? baseDisabled : ''}`}
       >
-        Reject
+        Reject Claim
       </button>
     </div>
   )
