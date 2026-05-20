@@ -13,27 +13,62 @@ import CommandPalette from './components/CommandPalette'
 import { useNotifications } from './components/NotificationsPopover'
 import CustomerPortal from './components/CustomerPortal'
 import SpecialistWorkspace from './components/SpecialistWorkspace'
+import AgentPromptCard from './components/AgentPromptCard'
 import { useAgents } from './useAgents'
 import claimsData from '../claims.json'
 import rulesData from '../rules.json'
+
+const ROLE_USERS = {
+  reviewer: { name: 'Jordan Diaz', role: 'Warranty Reviewer' },
+  manager: { name: 'Morgan Pierce', role: 'Regional Manager' },
+  investigator: { name: 'Priya Shah', role: 'Compliance Investigator' },
+  specialist: { name: 'Alex Tran', role: 'Resolution Specialist' },
+  customer: { name: 'Sam Carter', role: 'Vehicle Owner' },
+}
+
+const DEALER_NOTES_STORAGE_KEY = 'warranty-ui:dealer-notes:v1'
+
+function loadDealerNotes() {
+  try {
+    const raw = localStorage.getItem(DEALER_NOTES_STORAGE_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
 
 function App() {
   const [authed, setAuthed] = useState(false)
   const [view, setView] = useState('queue')
   const [role, setRole] = useState('reviewer')
-  const [claims, setClaims] = useState([])
+  const [claims] = useState(claimsData)
   const [activeClaimId, setActiveClaimId] = useState(null)
   const [activeDealerId, setActiveDealerId] = useState(null)
   const [decisions, setDecisions] = useState({})
+  const [reviewerNotes, setReviewerNotes] = useState({})
+  const [dealerNotes, setDealerNotes] = useState(() => loadDealerNotes())
+  const [lastDecisionId, setLastDecisionId] = useState(null)
   const [cmdkOpen, setCmdkOpen] = useState(false)
   const [contestData, setContestData] = useState({})
+  const [toast, setToast] = useState(null)
 
   const notifications = useNotifications()
   const { agentResults, runAgents } = useAgents(claims, rulesData)
+  const currentUser = ROLE_USERS[role] ?? ROLE_USERS.reviewer
 
   useEffect(() => {
-    setClaims(claimsData)
-  }, [])
+    try {
+      localStorage.setItem(DEALER_NOTES_STORAGE_KEY, JSON.stringify(dealerNotes))
+    } catch {
+      // ignore quota / private-mode errors
+    }
+  }, [dealerNotes])
+
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 3500)
+    return () => clearTimeout(t)
+  }, [toast])
 
   useEffect(() => {
     if (!authed) return
@@ -57,9 +92,22 @@ function App() {
     }
   }
 
-  const handleDecision = (claimId, decision) => {
+  const handleDecision = (claimId, decision, note) => {
     setDecisions(prev => ({ ...prev, [claimId]: decision }))
-    // Auto-advance: select next flagged/anomaly claim (J1 blueprint: "Next claim auto-selected")
+    if (note?.trim()) {
+      setReviewerNotes(prev => ({ ...prev, [claimId]: note.trim() }))
+    } else {
+      setReviewerNotes(prev => {
+        if (!(claimId in prev)) return prev
+        const next = { ...prev }
+        delete next[claimId]
+        return next
+      })
+    }
+    setLastDecisionId(claimId)
+    setToast({ kind: 'decision', claimId, decision, undoable: true })
+
+    // Auto-advance only from the queue (not when reviewing detail with a note attached)
     const getStatus = (c) => {
       if (agentResults[c.claimId]?.validation?.overallSeverity === 'high') return 'flagged'
       if (agentResults[c.claimId]?.validation?.overallSeverity === 'medium') return 'anomaly'
@@ -69,7 +117,7 @@ function App() {
     }
     const nextClaim = claims.find(c =>
       c.claimId !== claimId &&
-      !decisions[c.claimId] && // not already decided
+      !decisions[c.claimId] &&
       (getStatus(c) === 'flagged' || getStatus(c) === 'anomaly')
     )
     if (nextClaim) {
@@ -80,12 +128,38 @@ function App() {
     }
   }
 
-  const handleContestSubmit = (claimId, reason, evidence) => {
+  const handleUndoDecision = (claimId) => {
+    const target = claimId ?? lastDecisionId
+    if (!target) return
+    setDecisions(prev => {
+      if (!(target in prev)) return prev
+      const next = { ...prev }
+      delete next[target]
+      return next
+    })
+    setReviewerNotes(prev => {
+      if (!(target in prev)) return prev
+      const next = { ...prev }
+      delete next[target]
+      return next
+    })
+    setLastDecisionId(null)
+    setToast({ kind: 'info', text: `Decision on ${target} undone` })
+  }
+
+  const handleContestSubmit = (claimId, payload) => {
+    const { reason, evidence = [], context = '' } = payload ?? {}
     setContestData(prev => ({
       ...prev,
-      [claimId]: { status: 'submitted', reason, evidence, resolution: null }
+      [claimId]: {
+        status: 'submitted',
+        reason,
+        evidence,
+        context,
+        resolution: null,
+        submittedAt: new Date().toISOString(),
+      }
     }))
-    // Simulate agent re-validation after short delay
     setTimeout(() => {
       setContestData(prev => ({
         ...prev,
@@ -94,11 +168,87 @@ function App() {
     }, 2000)
   }
 
+  const handleWithdrawContest = (claimId) => {
+    setContestData(prev => {
+      if (!(claimId in prev)) return prev
+      const next = { ...prev }
+      delete next[claimId]
+      return next
+    })
+    setToast({ kind: 'info', text: `Contest on ${claimId} withdrawn` })
+  }
+
   const handleResolve = (claimId, outcome, notes) => {
     setContestData(prev => ({
       ...prev,
-      [claimId]: { ...prev[claimId], status: 'resolved', resolution: notes, outcome }
+      [claimId]: {
+        ...prev[claimId],
+        status: 'resolved',
+        resolution: notes,
+        outcome,
+        resolvedBy: currentUser.name,
+        resolverRole: currentUser.role,
+        resolvedAt: new Date().toISOString(),
+      }
     }))
+    setToast({ kind: 'info', text: `Resolution issued: ${outcome.toUpperCase()}` })
+  }
+
+  const handleRequestMoreInfo = (claimId, question) => {
+    setContestData(prev => ({
+      ...prev,
+      [claimId]: {
+        ...prev[claimId],
+        status: 'needs_info',
+        infoRequest: {
+          question,
+          requestedBy: currentUser.name,
+          requestedAt: new Date().toISOString(),
+          response: null,
+          respondedAt: null,
+        },
+      }
+    }))
+    setToast({ kind: 'info', text: 'Information request sent to customer' })
+  }
+
+  const handleSubmitInfoResponse = (claimId, response) => {
+    setContestData(prev => {
+      const existing = prev[claimId]
+      if (!existing?.infoRequest) return prev
+      return {
+        ...prev,
+        [claimId]: {
+          ...existing,
+          status: 'under_review',
+          infoRequest: {
+            ...existing.infoRequest,
+            response,
+            respondedAt: new Date().toISOString(),
+          },
+        }
+      }
+    })
+    setToast({ kind: 'info', text: 'Response sent — specialist will continue review' })
+  }
+
+  const handleSaveDealerNote = (dealerId, note) => {
+    setDealerNotes(prev => {
+      if (!note?.trim()) {
+        if (!(dealerId in prev)) return prev
+        const next = { ...prev }
+        delete next[dealerId]
+        return next
+      }
+      return {
+        ...prev,
+        [dealerId]: {
+          text: note.trim(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: currentUser.name,
+        }
+      }
+    })
   }
 
   const handleNavigate = (target) => {
@@ -163,23 +313,27 @@ function App() {
           agentResults={agentResults}
           contestData={contestData}
           onContestSubmit={handleContestSubmit}
-          rules={rulesData}
+          onWithdrawContest={handleWithdrawContest}
+          onSubmitInfoResponse={handleSubmitInfoResponse}
         />
       ) : view === 'specialist' ? (
         <SpecialistWorkspace
           claims={claims}
-          decisions={decisions}
           agentResults={agentResults}
           contestData={contestData}
-          rules={rulesData}
           onResolve={handleResolve}
+          onRequestMoreInfo={handleRequestMoreInfo}
         />
       ) : activeClaim ? (
         <ClaimDetail
+          key={activeClaimId}
           claim={activeClaim}
           rules={rulesData}
           agentResults={agentResults[activeClaimId]}
+          decision={decisions[activeClaimId]}
+          reviewerNote={reviewerNotes[activeClaimId]}
           onDecision={handleDecision}
+          onUndoDecision={handleUndoDecision}
           onBack={() => setActiveClaimId(null)}
         />
       ) : role === 'manager' ? (
@@ -188,6 +342,7 @@ function App() {
           decisions={decisions}
           agentResults={agentResults}
           onSelectClaim={handleSelectClaim}
+          onJumpToDealer={handleJumpToDealer}
         />
       ) : role === 'investigator' ? (
         <InvestigatorView
@@ -197,16 +352,25 @@ function App() {
           activeDealerId={activeDealerId}
           onOpenDealer={setActiveDealerId}
           onCloseDealer={() => setActiveDealerId(null)}
+          dealerNotes={dealerNotes}
+          onSaveDealerNote={handleSaveDealerNote}
         />
       ) : (
         <ReviewerHome
           claims={claims}
           decisions={decisions}
+          reviewerNotes={reviewerNotes}
           agentResults={agentResults}
           contestData={contestData}
+          lastDecisionId={lastDecisionId}
           onSelectClaim={handleSelectClaim}
           onDecision={handleDecision}
+          onUndoDecision={handleUndoDecision}
         />
+      )}
+
+      {toast && (
+        <Toast toast={toast} onUndo={handleUndoDecision} onDismiss={() => setToast(null)} />
       )}
 
       <CommandPalette
@@ -221,7 +385,34 @@ function App() {
   )
 }
 
-function ReviewerHome({ claims, decisions, agentResults, contestData, onSelectClaim, onDecision }) {
+function Toast({ toast, onUndo, onDismiss }) {
+  const isDecision = toast.kind === 'decision'
+  const label = isDecision
+    ? `${toast.claimId}: ${String(toast.decision).toUpperCase()}`
+    : toast.text
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-toyota-ink text-white rounded-lg shadow-lg px-4 py-3 flex items-center gap-4 min-w-[280px] animate-[fadeIn_150ms_ease-out]">
+      <span className="text-sm font-medium">{label}</span>
+      {isDecision && toast.undoable && (
+        <button
+          onClick={() => { onUndo(toast.claimId); onDismiss() }}
+          className="text-toyota-red text-xs font-semibold uppercase tracking-wider hover:text-white transition-colors"
+        >
+          Undo
+        </button>
+      )}
+      <button
+        onClick={onDismiss}
+        className="text-toyota-300 hover:text-white text-lg leading-none ml-auto"
+        aria-label="Dismiss"
+      >
+        ×
+      </button>
+    </div>
+  )
+}
+
+function ReviewerHome({ claims, decisions, reviewerNotes, agentResults, contestData, lastDecisionId, onSelectClaim, onDecision, onUndoDecision }) {
   const reviewed = Object.values(decisions).filter(Boolean).length
   const rejectedFlagged = claims.filter(
     c => decisions[c.claimId] === 'reject' && (c.groundTruth === 'violation' || c.groundTruth === 'anomaly')
@@ -250,13 +441,25 @@ function ReviewerHome({ claims, decisions, agentResults, contestData, onSelectCl
           { label: 'Accuracy', value: `${accuracy}%` },
         ]}
       />
+      <div className="px-6 pt-6 max-w-[1400px] mx-auto">
+        <AgentPromptCard
+          role="reviewer"
+          claims={claims}
+          decisions={decisions}
+          agentResults={agentResults}
+          onSelectClaim={onSelectClaim}
+        />
+      </div>
       <ClaimQueue
         claims={claims}
         decisions={decisions}
+        reviewerNotes={reviewerNotes}
         agentResults={agentResults}
         contestData={contestData}
+        lastDecisionId={lastDecisionId}
         onSelectClaim={onSelectClaim}
         onDecision={onDecision}
+        onUndoDecision={onUndoDecision}
       />
     </>
   )

@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import ContestForm from './ContestForm'
 import ContestStatusTracker from './ContestStatusTracker'
+import AgentPromptCard from './AgentPromptCard'
 
-export default function CustomerPortal({ claims, decisions, agentResults, contestData, onContestSubmit, rules }) {
+export default function CustomerPortal({ claims, decisions, agentResults, contestData, onContestSubmit, onWithdrawContest, onSubmitInfoResponse }) {
   const [selectedClaimId, setSelectedClaimId] = useState('CLM-00005')
+  const [infoResponse, setInfoResponse] = useState('')
 
   // Show claims that are decided OR pending (for the demo, all claims are "submitted")
   const decidedClaims = claims.filter(c =>
@@ -85,6 +87,14 @@ export default function CustomerPortal({ claims, decisions, agentResults, contes
         </select>
       </div>
 
+      <AgentPromptCard
+        role="customer"
+        claims={[activeClaim]}
+        decisions={decisions}
+        agentResults={agentResults}
+        contestData={contestData}
+      />
+
       {/* === PENDING REVIEW STATE === */}
       {isPending && (
         <>
@@ -99,16 +109,22 @@ export default function CustomerPortal({ claims, decisions, agentResults, contes
             </div>
           </div>
 
-          {/* Review progress tracker */}
+          {/* Review progress tracker — derived from agent state */}
+          {(() => {
+            const hasAgentResults = !!agentResults?.[claimId]
+            const verifyingCoverage = hasAgentResults
+            const reviewingDetails = hasAgentResults
+            const reviewSteps = [
+              { label: 'Received', done: true },
+              { label: 'Verifying Coverage', done: verifyingCoverage, active: !verifyingCoverage },
+              { label: 'Reviewing Details', done: false, active: reviewingDetails },
+              { label: 'Decision', done: false },
+            ]
+            return (
           <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
             <h3 className="text-sm font-semibold text-gray-700 mb-4">Review Progress</h3>
             <div className="flex items-center gap-2 mb-5">
-              {[
-                { label: 'Received', done: true },
-                { label: 'Verifying Coverage', done: true },
-                { label: 'Reviewing Details', active: true },
-                { label: 'Decision', done: false },
-              ].map((step, i, arr) => (
+              {reviewSteps.map((step, i, arr) => (
                 <div key={step.label} className="flex items-center gap-2">
                   <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${
                     step.done ? 'bg-green-100 text-green-800' :
@@ -134,6 +150,8 @@ export default function CustomerPortal({ claims, decisions, agentResults, contes
               Our team is currently reviewing the details of your repair claim. This includes verifying policy coverage, inspecting repair codes, and confirming labor documentation.
             </p>
           </div>
+            )
+          })()}
 
           {/* What we're checking */}
           <div className="bg-white border border-gray-200 rounded-xl p-5 mb-4">
@@ -254,6 +272,43 @@ export default function CustomerPortal({ claims, decisions, agentResults, contes
             <ContestStatusTracker status={contest.status} resolution={contest.resolution} outcome={contest.outcome} />
           )}
 
+          {/* Needs-info request — customer responds */}
+          {contest?.status === 'needs_info' && !contest.infoRequest?.response && (
+            <div className="bg-white border-2 border-blue-300 rounded-xl p-5 mb-4">
+              <div className="flex items-start gap-3 mb-3">
+                <span className="text-2xl">💬</span>
+                <div>
+                  <h3 className="text-sm font-semibold text-blue-900">Information needed</h3>
+                  <p className="text-xs text-blue-700 mt-0.5">The specialist reviewing your case has a question.</p>
+                </div>
+              </div>
+              <blockquote className="bg-blue-50 border-l-4 border-blue-400 rounded-r-md px-4 py-3 text-sm text-gray-700 mb-3">
+                "{contest.infoRequest?.question}"
+                <div className="text-[11px] text-blue-700 mt-2">— {contest.infoRequest?.requestedBy ?? 'Resolution Specialist'}</div>
+              </blockquote>
+              <textarea
+                value={infoResponse}
+                onChange={e => setInfoResponse(e.target.value.slice(0, 800))}
+                placeholder="Type your response here…"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none h-24 focus:outline-none focus:border-blue-400"
+              />
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs text-gray-400">{infoResponse.length}/800</span>
+                <button
+                  onClick={() => {
+                    if (!infoResponse.trim()) return
+                    onSubmitInfoResponse?.(claimId, infoResponse.trim())
+                    setInfoResponse('')
+                  }}
+                  disabled={!infoResponse.trim()}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Send response
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Resolution notification */}
           {contest?.status === 'resolved' && (
             <div className={`border rounded-xl p-5 mb-4 ${
@@ -263,7 +318,29 @@ export default function CustomerPortal({ claims, decisions, agentResults, contes
             }`}>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Resolution</h3>
               <p className="text-sm text-gray-700 leading-relaxed mb-2">{contest.resolution}</p>
-              <p className="text-xs text-gray-500 mt-3">This case is now closed. No further action is required.</p>
+              {(contest.resolvedBy || contest.resolvedAt) && (
+                <p className="text-xs text-gray-500 mt-3">
+                  Reviewed by {contest.resolvedBy ?? 'a warranty specialist'}
+                  {contest.resolvedAt && <span> · {new Date(contest.resolvedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span>}
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-1">This case is now closed. No further action is required.</p>
+            </div>
+          )}
+
+          {/* Withdraw contest (active contest, not resolved) */}
+          {contest && contest.status !== 'resolved' && onWithdrawContest && (
+            <div className="text-center mt-2 mb-4">
+              <button
+                onClick={() => {
+                  if (window.confirm('Withdraw this contest? You can submit a new one later.')) {
+                    onWithdrawContest(claimId)
+                  }
+                }}
+                className="text-xs text-gray-500 hover:text-red-600 underline"
+              >
+                Withdraw contest
+              </button>
             </div>
           )}
 

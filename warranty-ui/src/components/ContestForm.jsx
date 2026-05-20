@@ -1,16 +1,36 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 export default function ContestForm({ claimId, onSubmit }) {
   const [reason, setReason] = useState('')
-  const [evidence, setEvidence] = useState('')
+  const [files, setFiles] = useState([])
   const [context, setContext] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const fileInputRef = useRef(null)
+
+  const handleFiles = (fileList) => {
+    const incoming = Array.from(fileList ?? []).map(f => ({ name: f.name, size: f.size }))
+    setFiles(prev => {
+      const seen = new Set(prev.map(f => f.name))
+      const merged = [...prev]
+      for (const f of incoming) {
+        if (!seen.has(f.name)) merged.push(f)
+      }
+      return merged
+    })
+  }
+
+  const removeFile = (name) => {
+    setFiles(prev => prev.filter(f => f.name !== name))
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!reason.trim()) return
-    const evidenceFiles = evidence.trim() ? evidence.split(',').map(f => f.trim()) : []
-    onSubmit(claimId, reason.trim(), evidenceFiles)
+    onSubmit(claimId, {
+      reason: reason.trim(),
+      evidence: files,
+      context: context.trim(),
+    })
   }
 
   if (!showForm) {
@@ -46,15 +66,39 @@ export default function ContestForm({ claimId, onSubmit }) {
 
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">
-            Supporting evidence (filenames, comma-separated)
+            Supporting evidence
           </label>
           <input
-            type="text"
-            value={evidence}
-            onChange={e => setEvidence(e.target.value)}
-            placeholder="e.g., diagnostic_report.pdf, repair_receipt.jpg"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+            ref={fileInputRef}
+            type="file"
+            multiple
+            onChange={e => handleFiles(e.target.files)}
+            className="hidden"
           />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full bg-white border-2 border-dashed border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-lg px-4 py-3 text-sm text-gray-600 transition-colors"
+          >
+            📎 Attach files (diagnostic reports, receipts, photos)
+          </button>
+          {files.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {files.map(f => (
+                <li key={f.name} className="flex items-center justify-between bg-gray-50 rounded px-2.5 py-1.5 text-xs">
+                  <span className="text-gray-700 truncate">📎 {f.name} <span className="text-gray-400">({(f.size / 1024).toFixed(0)} KB)</span></span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(f.name)}
+                    className="text-gray-400 hover:text-red-500 ml-2"
+                    aria-label={`Remove ${f.name}`}
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div>

@@ -1,24 +1,37 @@
 import { useState } from 'react'
 import ResolutionBriefPanel from './ResolutionBriefPanel'
+import AgentPromptCard from './AgentPromptCard'
 
-export default function SpecialistWorkspace({ claims, decisions, agentResults, contestData, rules, onResolve }) {
+export default function SpecialistWorkspace({ claims, agentResults, contestData, onResolve, onRequestMoreInfo }) {
   const [notes, setNotes] = useState('')
   const [selectedClaimId, setSelectedClaimId] = useState('CLM-00005')
 
-  // Filter to claims with active contests
+  // Surface all claims that have ever been contested (active OR resolved) so specialists can review their work
   const contestedClaims = claims.filter(c =>
-    contestData[c.claimId] && contestData[c.claimId].status !== 'none' && contestData[c.claimId].status !== 'resolved'
+    contestData[c.claimId] && contestData[c.claimId].status !== 'none'
   )
 
   const activeClaim = claims.find(c => c.claimId === selectedClaimId)
   const contest = contestData[selectedClaimId]
   const validation = agentResults?.[selectedClaimId]?.validation
   const summary = agentResults?.[selectedClaimId]?.summary
+  const needsInfo = contest?.status === 'needs_info'
 
   const handleAction = (outcome) => {
     if (!notes.trim()) return
     onResolve(selectedClaimId, outcome, notes.trim())
     setNotes('')
+  }
+
+  const handleRequestInfo = () => {
+    if (!notes.trim()) return
+    onRequestMoreInfo?.(selectedClaimId, notes.trim())
+    setNotes('')
+  }
+
+  const formatDateTime = (iso) => {
+    if (!iso) return ''
+    return new Date(iso).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
   }
 
   if (!activeClaim) {
@@ -39,6 +52,12 @@ export default function SpecialistWorkspace({ claims, decisions, agentResults, c
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      <AgentPromptCard
+        role="specialist"
+        claims={claims}
+        contestData={contestData}
+      />
+
       {/* Claim selector */}
       <div className="flex items-center gap-3 mb-4">
         <h2 className="text-lg font-semibold text-gray-800">Specialist Resolution Workspace</h2>
@@ -125,16 +144,50 @@ export default function SpecialistWorkspace({ claims, decisions, agentResults, c
                   <span className="text-xs text-gray-500">Reason for contest:</span>
                   <p className="text-sm text-gray-700 mt-1">{contest.reason || 'The diagnostic report from my independent mechanic confirms the ECM fault was present and required replacement. The intermittent connection issue is well-documented in Toyota TSB-0142-21.'}</p>
                 </div>
+                {contest.context && (
+                  <div>
+                    <span className="text-xs text-gray-500">Additional context:</span>
+                    <p className="text-sm text-gray-700 mt-1">{contest.context}</p>
+                  </div>
+                )}
                 {(contest.evidence?.length > 0 || !contest.reason) && (
                   <div>
                     <span className="text-xs text-gray-500">Supporting evidence:</span>
-                    <div className="flex gap-2 mt-1">
-                      {(contest.evidence?.length > 0 ? contest.evidence : ['independent_diagnostic_report.pdf', 'TSB-0142-21_reference.pdf']).map((file, i) => (
-                        <span key={i} className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded flex items-center gap-1">
-                          📎 {file}
-                        </span>
-                      ))}
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {(contest.evidence?.length > 0 ? contest.evidence : ['independent_diagnostic_report.pdf', 'TSB-0142-21_reference.pdf']).map((file, i) => {
+                        const label = typeof file === 'string' ? file : `${file.name}${file.size ? ` (${(file.size / 1024).toFixed(0)} KB)` : ''}`
+                        return (
+                          <span key={i} className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded flex items-center gap-1">
+                            📎 {label}
+                          </span>
+                        )
+                      })}
                     </div>
+                  </div>
+                )}
+                {contest.submittedAt && (
+                  <div className="text-xs text-gray-500">
+                    Submitted {formatDateTime(contest.submittedAt)}
+                  </div>
+                )}
+                {contest.infoRequest && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
+                    <div className="text-xs font-semibold text-blue-800 mb-1">Info request to customer</div>
+                    <p className="text-sm text-blue-900">{contest.infoRequest.question}</p>
+                    <div className="text-[11px] text-blue-700 mt-1">
+                      Asked by {contest.infoRequest.requestedBy} · {formatDateTime(contest.infoRequest.requestedAt)}
+                    </div>
+                    {contest.infoRequest.response ? (
+                      <div className="mt-2 pt-2 border-t border-blue-200">
+                        <div className="text-xs font-semibold text-blue-800 mb-1">Customer response</div>
+                        <p className="text-sm text-gray-700">{contest.infoRequest.response}</p>
+                        <div className="text-[11px] text-blue-700 mt-1">
+                          Received {formatDateTime(contest.infoRequest.respondedAt)}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-2 text-xs italic text-blue-700">Awaiting customer response…</div>
+                    )}
                   </div>
                 )}
               </div>
@@ -151,16 +204,26 @@ export default function SpecialistWorkspace({ claims, decisions, agentResults, c
           {/* Resolution action bar */}
           {contest?.status !== 'resolved' && (
             <div className="bg-white border border-gray-200 rounded-xl p-5">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Resolution</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                {needsInfo ? 'Awaiting Customer Response' : 'Resolution'}
+              </h3>
+
+              {needsInfo && !contest.infoRequest?.response && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3 text-xs text-blue-900">
+                  Customer has been asked for more information. You can still issue a final decision below, or wait for their response (it will appear in the contest panel on the left).
+                </div>
+              )}
 
               <div className="mb-3">
                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Resolution notes <span className="text-red-500">*</span>
+                  {needsInfo ? 'Resolution / new question' : 'Resolution notes'} <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value.slice(0, 500))}
-                  placeholder="Enter your resolution reasoning..."
+                  placeholder={needsInfo
+                    ? 'Add new question or write a final resolution…'
+                    : 'Enter your resolution reasoning, or — for "Request More Info" — the specific question to ask the customer.'}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none h-20 focus:outline-none focus:border-gray-400"
                 />
                 <div className="flex justify-between">
@@ -194,10 +257,7 @@ export default function SpecialistWorkspace({ claims, decisions, agentResults, c
                   Partial Approval
                 </button>
                 <button
-                  onClick={() => {
-                    if (!notes.trim()) return
-                    // Request more info just resets status
-                  }}
+                  onClick={handleRequestInfo}
                   disabled={!notes.trim()}
                   className="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 px-4 py-2 rounded-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -215,7 +275,14 @@ export default function SpecialistWorkspace({ claims, decisions, agentResults, c
             }`}>
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Resolution Issued</h3>
               <p className="text-sm text-gray-700 font-medium capitalize mb-1">{contest.outcome}</p>
-              <p className="text-sm text-gray-600">{contest.resolution}</p>
+              <p className="text-sm text-gray-600 mb-3">{contest.resolution}</p>
+              {(contest.resolvedBy || contest.resolvedAt) && (
+                <div className="text-[11px] text-gray-500 border-t border-current/10 pt-2 mt-2">
+                  Resolved by {contest.resolvedBy ?? 'Specialist'}
+                  {contest.resolverRole && <span className="text-gray-400"> · {contest.resolverRole}</span>}
+                  {contest.resolvedAt && <span> · {formatDateTime(contest.resolvedAt)}</span>}
+                </div>
+              )}
             </div>
           )}
         </div>

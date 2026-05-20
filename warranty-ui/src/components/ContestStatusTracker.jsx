@@ -1,9 +1,17 @@
-export default function ContestStatusTracker({ status, resolution, outcome }) {
-  const steps = [
-    { key: 'submitted', label: 'Contest Received' },
-    { key: 'under_review', label: 'Under Review' },
-    { key: 'resolved', label: 'Decision Made' },
-  ]
+export default function ContestStatusTracker({ status }) {
+  const includeNeedsInfo = status === 'needs_info'
+  const steps = includeNeedsInfo
+    ? [
+        { key: 'submitted', label: 'Contest Received' },
+        { key: 'under_review', label: 'Under Review' },
+        { key: 'needs_info', label: 'Information Requested' },
+        { key: 'resolved', label: 'Decision Made' },
+      ]
+    : [
+        { key: 'submitted', label: 'Contest Received' },
+        { key: 'under_review', label: 'Under Review' },
+        { key: 'resolved', label: 'Decision Made' },
+      ]
 
   const currentIndex = steps.findIndex(s => s.key === status)
 
@@ -12,7 +20,7 @@ export default function ContestStatusTracker({ status, resolution, outcome }) {
       <h3 className="text-sm font-semibold text-gray-700 mb-4">Contest Status</h3>
 
       {/* Progress pills */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
         {steps.map((step, i) => (
           <div key={step.key} className="flex items-center gap-2">
             <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${
@@ -43,6 +51,9 @@ export default function ContestStatusTracker({ status, resolution, outcome }) {
         )}
         {status === 'under_review' && (
           <p>A warranty specialist is now reviewing your case alongside an AI-generated brief. They have access to your evidence and the original decision context. You'll be notified once a resolution is reached.</p>
+        )}
+        {status === 'needs_info' && (
+          <p>The specialist needs additional information to complete your review. See the message below and provide a response to keep the review moving.</p>
         )}
         {status === 'resolved' && (
           <p>Your contest has been resolved. See the decision below — thank you for your patience throughout this process.</p>

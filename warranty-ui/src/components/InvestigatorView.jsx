@@ -1,12 +1,43 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { getStatus, getDealerStats } from '../claimsStore'
 import MetricsStrip from './MetricsStrip'
+import AgentPromptCard from './AgentPromptCard'
 
-export default function InvestigatorView({ claims, agentResults, onSelectClaim, activeDealerId, onOpenDealer, onCloseDealer }) {
+const OPEN_CASES_STORAGE_KEY = 'warranty-ui:open-cases:v1'
+
+function loadOpenCases() {
+  try {
+    const raw = localStorage.getItem(OPEN_CASES_STORAGE_KEY)
+    return raw ? new Set(JSON.parse(raw)) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+export default function InvestigatorView({ claims, agentResults, onSelectClaim, activeDealerId, onOpenDealer, onCloseDealer, dealerNotes = {}, onSaveDealerNote }) {
   const dealerStats = useMemo(
     () => getDealerStats(claims, agentResults).sort((a, b) => b.riskScore - a.riskScore),
     [claims, agentResults]
   )
+
+  const [openCases, setOpenCases] = useState(() => loadOpenCases())
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(OPEN_CASES_STORAGE_KEY, JSON.stringify([...openCases]))
+    } catch {
+      // ignore
+    }
+  }, [openCases])
+
+  const toggleCase = (dealerId) => {
+    setOpenCases(prev => {
+      const next = new Set(prev)
+      if (next.has(dealerId)) next.delete(dealerId)
+      else next.add(dealerId)
+      return next
+    })
+  }
 
   const activeDealer = activeDealerId ? dealerStats.find(d => d.dealerId === activeDealerId) : null
   const regionAvgFlagRate = dealerStats.length > 0
@@ -27,31 +58,48 @@ export default function InvestigatorView({ claims, agentResults, onSelectClaim, 
         metrics={[
           { label: 'Dealers Under Watch', value: watchedDealers },
           { label: 'Open Patterns', value: totalFlagged },
-          { label: 'Active Cases', value: 2 },
+          { label: 'Active Cases', value: openCases.size },
           { label: 'Exposure Tracked', value: `$${(totalExposure / 1000).toFixed(0)}K`, accent: true },
         ]}
       />
 
       {activeDealer ? (
         <DealerProfile
+          key={activeDealer.dealerId}
           dealer={activeDealer}
           regionAvgFlagRate={regionAvgFlagRate}
           agentResults={agentResults}
           onBack={onCloseDealer}
           onSelectClaim={onSelectClaim}
+          note={dealerNotes[activeDealer.dealerId]}
+          onSaveNote={(text) => onSaveDealerNote?.(activeDealer.dealerId, text)}
+          caseOpen={openCases.has(activeDealer.dealerId)}
+          onToggleCase={() => toggleCase(activeDealer.dealerId)}
         />
       ) : (
-        <DealerLeaderboard
-          dealers={dealerStats}
-          regionAvgFlagRate={regionAvgFlagRate}
-          onOpenDealer={onOpenDealer}
-        />
+        <>
+          <div className="max-w-[1400px] mx-auto px-6 pt-6">
+            <AgentPromptCard
+              role="investigator"
+              claims={claims}
+              agentResults={agentResults}
+              onJumpToDealer={onOpenDealer}
+            />
+          </div>
+          <DealerLeaderboard
+            dealers={dealerStats}
+            regionAvgFlagRate={regionAvgFlagRate}
+            onOpenDealer={onOpenDealer}
+            dealerNotes={dealerNotes}
+            openCases={openCases}
+          />
+        </>
       )}
     </>
   )
 }
 
-function DealerLeaderboard({ dealers, regionAvgFlagRate, onOpenDealer }) {
+function DealerLeaderboard({ dealers, regionAvgFlagRate, onOpenDealer, dealerNotes = {}, openCases = new Set() }) {
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-8">
       <div className="mb-6">
@@ -87,7 +135,17 @@ function DealerLeaderboard({ dealers, regionAvgFlagRate, onOpenDealer }) {
                   className="border-t border-toyota-100 hover:bg-toyota-50 cursor-pointer transition-colors"
                   onClick={() => onOpenDealer(d.dealerId)}
                 >
-                  <td className="px-4 py-3 font-mono text-sm font-semibold text-toyota-red">{d.dealerId}</td>
+                  <td className="px-4 py-3 font-mono text-sm font-semibold text-toyota-red">
+                    <span className="inline-flex items-center gap-1.5">
+                      {d.dealerId}
+                      {openCases.has(d.dealerId) && (
+                        <span title="Open case" className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-sm border bg-toyota-red text-white border-toyota-red">case</span>
+                      )}
+                      {dealerNotes[d.dealerId]?.text && (
+                        <span title={dealerNotes[d.dealerId].text} aria-label="Has investigator note">📝</span>
+                      )}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-right tabular-nums text-toyota-700">{d.claimCount}</td>
                   <td className="px-4 py-3 text-right tabular-nums text-toyota-700">{d.flagged}</td>
                   <td className="px-4 py-3 text-right tabular-nums text-toyota-700">{d.anomaly}</td>
@@ -126,7 +184,53 @@ function DealerLeaderboard({ dealers, regionAvgFlagRate, onOpenDealer }) {
   )
 }
 
-function DealerProfile({ dealer, regionAvgFlagRate, agentResults, onBack, onSelectClaim }) {
+function DealerProfile({ dealer, regionAvgFlagRate, agentResults, onBack, onSelectClaim, note, onSaveNote, caseOpen, onToggleCase }) {
+  const [draftNote, setDraftNote] = useState(note?.text ?? '')
+  const [savedAt, setSavedAt] = useState(null)
+
+  const handleSaveNote = () => {
+    onSaveNote?.(draftNote)
+    setSavedAt(new Date())
+  }
+
+  const handleExportEvidence = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      dealerId: dealer.dealerId,
+      summary: {
+        claimCount: dealer.claimCount,
+        flagged: dealer.flagged,
+        anomaly: dealer.anomaly,
+        flagRate: dealer.flagRate,
+        riskScore: dealer.riskScore,
+        totalAmount: dealer.totalAmount,
+      },
+      investigatorNote: note ?? null,
+      claims: dealer.claims.map(c => ({
+        claimId: c.claimId,
+        claimDate: c.claimDate,
+        vin: c.vin,
+        repairCodes: c.repairCodes,
+        laborHours: c.laborHours,
+        vehicleMileage: c.vehicleMileage,
+        warrantyType: c.warrantyType,
+        claimAmount: c.claimAmount,
+        techNotes: c.techNotes,
+        agentVerdict: agentResults?.[c.claimId]?.summary?.recommendation ?? null,
+        violations: agentResults?.[c.claimId]?.validation?.results?.filter(r => !r.passed).map(r => r.ruleId) ?? [],
+      })),
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${dealer.dealerId}-evidence-${new Date().toISOString().slice(0, 10)}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   const above = dealer.flagRate > regionAvgFlagRate
   const claimsByDate = [...dealer.claims].sort((a, b) => a.claimDate.localeCompare(b.claimDate))
   const repairCodeCount = new Map()
@@ -163,11 +267,19 @@ function DealerProfile({ dealer, regionAvgFlagRate, agentResults, onBack, onSele
             </p>
           </div>
           <div className="flex gap-2">
-            <button className="bg-white border border-toyota-200 hover:border-toyota-300 text-toyota-700 px-4 py-2 rounded-md text-sm font-medium">
+            <button
+              onClick={handleExportEvidence}
+              className="bg-white border border-toyota-200 hover:border-toyota-300 text-toyota-700 px-4 py-2 rounded-md text-sm font-medium"
+            >
               Export evidence
             </button>
-            <button className="bg-toyota-red text-white border border-toyota-red hover:bg-toyota-red-hover px-4 py-2 rounded-md text-sm font-semibold uppercase tracking-wider">
-              Open case
+            <button
+              onClick={onToggleCase}
+              className={caseOpen
+                ? 'bg-white border border-toyota-red text-toyota-red hover:bg-toyota-red-tint px-4 py-2 rounded-md text-sm font-semibold uppercase tracking-wider'
+                : 'bg-toyota-red text-white border border-toyota-red hover:bg-toyota-red-hover px-4 py-2 rounded-md text-sm font-semibold uppercase tracking-wider'}
+            >
+              {caseOpen ? 'Close case' : 'Open case'}
             </button>
           </div>
         </div>
@@ -278,10 +390,23 @@ function DealerProfile({ dealer, regionAvgFlagRate, agentResults, onBack, onSele
               Investigation Notes
             </h3>
             <textarea
+              value={draftNote}
+              onChange={e => setDraftNote(e.target.value.slice(0, 1000))}
+              onBlur={handleSaveNote}
               placeholder="Add note for case file…"
               className="w-full text-sm border border-toyota-200 rounded-md p-2 placeholder:text-toyota-400 focus:outline-none focus:border-toyota-red focus:ring-1 focus:ring-toyota-red"
               rows="4"
             />
+            <div className="flex items-center justify-between mt-1.5 text-xs">
+              <span className="text-toyota-400">{draftNote.length}/1000</span>
+              {savedAt ? (
+                <span className="text-status-clean">Saved {savedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+              ) : note?.updatedAt ? (
+                <span className="text-toyota-500">Last saved {new Date(note.updatedAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} by {note.updatedBy}</span>
+              ) : (
+                <span className="text-toyota-400 italic">Auto-saves on blur</span>
+              )}
+            </div>
           </section>
         </aside>
       </div>

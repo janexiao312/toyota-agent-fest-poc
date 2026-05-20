@@ -1,26 +1,46 @@
 import { useState } from 'react'
 
+const LOGIN_PANEL_IMAGES = [
+  '/photos/toyota-employee-01.png',
+  '/photos/toyota-employee-02.png',
+  '/photos/toyota-employee-03.png',
+  '/photos/toyota-employee-04.png',
+]
+
 export default function LoginScreen({ onSignIn }) {
   const [email, setEmail] = useState('jordan.diaz@toyota.com')
   const [password, setPassword] = useState('demoaccess')
+  const [panelImage] = useState(() => {
+    const index = Math.floor(Math.random() * LOGIN_PANEL_IMAGES.length)
+    return LOGIN_PANEL_IMAGES[index]
+  })
 
   return (
     <div className="min-h-screen grid grid-cols-2 bg-toyota-50">
 
       <div className="bg-toyota-ink text-white relative overflow-hidden flex flex-col justify-between p-12">
-        <div className="absolute top-0 left-0 w-full h-1 bg-toyota-red" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-toyota-red opacity-10" />
+        <div className="absolute inset-0">
+          <div
+            className="absolute inset-0 bg-center bg-cover opacity-60"
+            style={{ backgroundImage: `url(${panelImage})` }}
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-toyota-ink/98 via-toyota-ink/38 to-toyota-ink/96" aria-hidden="true" />
+        </div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-toyota-red z-10" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-toyota-red opacity-10 z-10" />
 
-        <div>
+        <div className="relative z-20">
           <ToyotaLogoDark className="h-10 w-auto" />
         </div>
 
-        <div className="space-y-6 relative z-10">
+        <div className="space-y-6 relative z-20 mt-auto">
           <h1 className="text-4xl font-bold leading-tight tracking-tight max-w-md">
-            Warranty claims, reviewed at machine speed.
+            Toyota Smart Warranty Management Portal
           </h1>
           <p className="text-base text-toyota-300 max-w-md leading-relaxed">
-            AI agents pre-screen every claim against policy rules and dealer patterns
+            Warranty claims, reviewed at machine speed. AI agents pre-screen every
+            claim against policy rules and dealer patterns
             so reviewers spend their time on the ones that matter.
           </p>
           <div className="flex gap-8 pt-4 text-sm">
@@ -30,9 +50,6 @@ export default function LoginScreen({ onSignIn }) {
           </div>
         </div>
 
-        <div className="text-[11px] text-toyota-500 uppercase tracking-wider relative z-10">
-          v0.1 · Internal POC · Toyota Motor North America
-        </div>
       </div>
 
       <div className="bg-white flex items-center justify-center p-12">
@@ -100,6 +117,10 @@ export default function LoginScreen({ onSignIn }) {
             By signing in you agree to Toyota's
             <a className="text-toyota-700 hover:text-toyota-red font-medium cursor-pointer"> Acceptable Use Policy</a>.
             Access is monitored for compliance.
+          </p>
+
+          <p className="mt-3 text-[11px] text-toyota-500 uppercase tracking-wider text-center">
+            v0.1 · Internal POC · Toyota Motor North America
           </p>
         </form>
       </div>

@@ -1,4 +1,4 @@
-export default function ClaimRow({ claim, status, decision, contestStatus, isLoading, onSelect, onDecision }) {
+export default function ClaimRow({ claim, status, decision, reviewerNote, contestStatus, isLoading, onSelect, onDecision }) {
   const formatDate = (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00')
     return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${d.getFullYear()}`
@@ -60,8 +60,19 @@ export default function ClaimRow({ claim, status, decision, contestStatus, isLoa
             Analysing…
           </span>
         ) : decision ? (
-          <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border ${decisionBadge[decision]}`}>
-            {decision}
+          <span className="inline-flex items-center gap-1.5">
+            <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border ${decisionBadge[decision]}`}>
+              {decision}
+            </span>
+            {reviewerNote && (
+              <span
+                title={reviewerNote}
+                className="text-toyota-500 text-xs"
+                aria-label="Has reviewer note"
+              >
+                📝
+              </span>
+            )}
           </span>
         ) : (
           <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-sm border ${statusBadge[status]}`}>
